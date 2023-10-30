@@ -1,0 +1,33 @@
+.textBar{
+    border-radius: 16px;
+    border: 1px solid gray;
+    background-color: #222;
+    color: white;
+    outline: none;
+    padding: 4px;
+    font-size: 16px;
+}
+label{
+    color: gray;
+}
+body{
+    background-color: #121212;
+    color: white;
+    font-family:Verdana, Geneva, Tahoma, sans-serif;
+}
+div{
+    margin: 6px;
+}
+a{
+    color: white;
+}
+button{
+    border: 1px solid gray;
+    background-color: #222;
+    color: white;
+    padding: 6px;
+    font-size: 15px;
+    font-weight: 600;
+    border-radius: 5px;
+    cursor: pointer;
+}
