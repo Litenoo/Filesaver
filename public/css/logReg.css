@@ -12,13 +12,20 @@ label{
 }
 body{
     background-color: #121212;
+    background-image: url('../images/Background.png');
+    background-repeat: no-repeat;
+    background-size: cover;
     color: white;
     font-family:Verdana, Geneva, Tahoma, sans-serif;
+    background-image: 'images/background.png';
 }
 div{
     margin: 6px;
 }
 a{
+    color: gray;
+}
+a:hover{
     color: white;
 }
 button{
@@ -30,4 +37,60 @@ button{
     font-weight: 600;
     border-radius: 5px;
     cursor: pointer;
+}
+#container{
+    width: 100%;
+    height: 80vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+#center{
+    min-width: 22%;
+    padding: 16px;
+    border: 1px solid gray;
+    border-radius: 9px;
+}
+form div{
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+}
+#loginInpCont{
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+}
+#inputs{
+    display: flex;
+    align-items: center;
+    width: 100%;
+    margin-left: 0px;
+}
+#labels{
+    width: 68px;
+    align-items: end;
+    margin-right: 0px;
+}
+input{
+    background-color: #121212;
+    outline: none;
+    border: 1px solid gray;
+    border-radius: 3px;
+    height: 26px;
+    margin: 6px;
+    color: white;
+    width: 100%;
+}
+label{
+    margin: 9px;
+    height: 21px;
+}
+h1{
+    height: 30px;
+    margin: 10px;
+    margin-bottom: 30px;
+}
+#submit{
+    width: 100%;
 }

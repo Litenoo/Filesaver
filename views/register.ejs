@@ -1,19 +1,28 @@
-<link rel="stylesheet"type="text/css" href="css/logReg.css">
-<h1>Register</h1>
-<form action="/register" method="POST">
-    <div>
-        <label for="username">Username</label>
-        <input type="text" name="username" id="username" class="textBar">
-    </div>
-    <div>
-        <label for="email">E-mail</label>
-        <input type="email" name="email" id="email"class="textBar">
-    </div>
-    <div>
-        <label for="password">Password</label>
-        <input type="password" name="password" id="password"class="textBar">
-    </div>
-    <button type="submit">Register</button>
-</form>
+<link rel="stylesheet" type="text/css" href="css/logReg.css">
 
-<a href="login">Login</a>
+<div id="container">
+    <div id="center">
+
+        <h1>Register</h1>
+        <form action="/register" method="POST">
+            <div id="loginInpCont">
+                <div id="labels">
+                    <label for="username">Username</label>
+                    <label for="email">Email</label>
+                    <label for="password">Password</label>
+                </div>
+
+                <div id="inputs">
+                    <input type="text" name="username" id="username" required>
+                    <input type="email" name="email" id="email" required>
+                    <input type="password" name="password" id="password" required>
+                </div>
+            </div>
+
+
+            <button type="submit" id="submit">Register</button>
+        </form>
+
+        <a href="login">Login</a>
+    </div>
+</div>

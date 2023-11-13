@@ -1,49 +1,105 @@
-const dotenv = require('dotenv');
+require('dotenv').config();
 
-const PORT = 3000;
 const express = require("express");
 const app = express();
-
 const passport = require('passport');
-const Strategy = require('passport-local').Strategy;
 const bcrypt = require('bcrypt');
+const sqlite3 = require('sqlite3').verbose();
+const methodOverride = require('method-override');
+const flash = require('express-flash')
+const session = require('express-session');
+const initAuth = require('./auth.js');
+const { v4: uuidv4 } = require('uuid');
+const PORT = 3000;
 
-const users = [];
+let db = new sqlite3.Database('./mydatabase.db', sqlite3.OPEN_READWRITE, (err) => {
+    if (err) { console.error(err) } else {
+        let query = 'CREATE TABLE IF NOT EXISTS users(id INTEGER PRIMARY KEY, username VARCHAR(255) NOT NULL, email VARCHAR(255) NOT NULL, password VARCHAR(255), premiumstat INT NOT NULL)';
+        db.run(query);
+    }
 
-app.set({ 'view-engine': 'ejs' })
-app.use(express.urlencoded({ extended: false }))
+})
+app.use(methodOverride('_method'))
 
-app.use(express.static(__dirname + '/public'))
+initAuth(
+    passport,
+    function getUserByEmail(email) { // Reduce code length here:
+        return new Promise((resolve, reject) => {
+            db.get(`SELECT * FROM users WHERE email = '${email}'`, [], (err, user)=> {
+                if (err) {
+                    reject(err.message);
+                } else {
+                    resolve(user);
+                }
+            })
+        })
+    },
+    id => db.get(`SELECT * FROM users WHERE id = '${id}'`, [], (err, user) => {
+        if (err) {
+            console.error(err.message);
+        } else {
+            return user;
+        }
+    })
+)
+
+app.set({ 'view-engine': 'ejs' });
+app.use(express.urlencoded({ extended: false }));
+app.use(express.static(__dirname + '/public'));
+app.use(flash());
+app.use(session({
+    secret: process.env.SESSION_SECRET,
+    resave: false,
+    saveUninitialized: false,
+}))
+app.use(passport.session());
 
 app.get('/', (req, res) => {
-    res.render('index.ejs');
+    if (req.user) {
+        res.render('index.ejs', { name: req.user.username, premiumStatus: 'Non-Premium' });
+    } else {
+        res.redirect('login');
+    }
+})
+
+app.get('/fileMenager', (req, res) => {
+    if (req.user) {
+        res.render('fileMenager.ejs', { name: req.user.username, premiumStatus: 'Non-Premium' });
+    } else {
+        res.redirect('login');
+    }
 })
 
 app.get('/register', (req, res) => {
-    res.render('register.ejs');
+    if (req.user) {
+        res.redirect('/')
+    } else {
+        res.render('register.ejs');
+    }
 })
 
 app.get('/login', (req, res) => {
     res.render('login.ejs');
+
 })
 
 app.post('/register', async (req, res) => {
-    const hashedPass = await bcrypt.hash(req.body.password, 10)
-    users.push({
-        username: req.body.username,
-        email: req.body.email,
-        password: hashedPass,
-    })
-    console.log(users[users.length -1]);
+    const hashedPass = await bcrypt.hash(req.body.password, 10);
+    let query = `INSERT INTO users (username, email, password, premiumstat) VALUES ('${req.body.username}', '${req.body.email}', '${hashedPass}', 0)`;
+    db.run(query);
     res.redirect('/login');
 })
 
-app.listen(PORT, () => { console.log(`Server is listening ${PORT}`) });
+app.post('/login', passport.authenticate('local', {
+    successRedirect: '/',
+    failureRedirect: '/login',
+    failureFlash: true,
+}))
+
+app.delete('/logout', (req, res) => {
+    req.session.destroy();
+    res.redirect('/login');
+})
 
 
-
-/*Todos:
--- Login/Register System + Logout system
--- File saving for each user
--- Database to save files -- Optional but it would be cool if
-*/
+app.listen(PORT, () => { console.log(`Server is listening on ${PORT}`) });
