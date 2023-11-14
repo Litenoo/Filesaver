@@ -1,31 +1,29 @@
 require('dotenv').config();
 
 const express = require("express");
+const PORT = 3000;
 const app = express();
-const passport = require('passport');
 const bcrypt = require('bcrypt');
+const passport = require('passport');
 const sqlite3 = require('sqlite3').verbose();
 const methodOverride = require('method-override');
-const flash = require('express-flash')
 const session = require('express-session');
+const flash = require('express-flash');
 const initAuth = require('./auth.js');
-const { v4: uuidv4 } = require('uuid');
-const PORT = 3000;
 
 let db = new sqlite3.Database('./mydatabase.db', sqlite3.OPEN_READWRITE, (err) => {
     if (err) { console.error(err) } else {
         let query = 'CREATE TABLE IF NOT EXISTS users(id INTEGER PRIMARY KEY, username VARCHAR(255) NOT NULL, email VARCHAR(255) NOT NULL, password VARCHAR(255), premiumstat INT NOT NULL)';
         db.run(query);
     }
-
 })
-app.use(methodOverride('_method'))
+app.use(methodOverride('_method'));
 
 initAuth(
     passport,
-    function getUserByEmail(email) { // Reduce code length here:
+    function getUserByEmail(email) { // Reduce code length here and change it to async/await:
         return new Promise((resolve, reject) => {
-            db.get(`SELECT * FROM users WHERE email = '${email}'`, [], (err, user)=> {
+            db.get(`SELECT * FROM users WHERE email = '${email}'`, [], (err, user) => {
                 if (err) {
                     reject(err.message);
                 } else {
@@ -72,15 +70,15 @@ app.get('/fileMenager', (req, res) => {
 
 app.get('/register', (req, res) => {
     if (req.user) {
-        res.redirect('/')
+        res.redirect('/');
     } else {
         res.render('register.ejs');
     }
 })
 
 app.get('/login', (req, res) => {
-    res.render('login.ejs');
-
+    let error = req.flash().error
+    res.render('login.ejs', {error});
 })
 
 app.post('/register', async (req, res) => {
@@ -100,6 +98,5 @@ app.delete('/logout', (req, res) => {
     req.session.destroy();
     res.redirect('/login');
 })
-
 
 app.listen(PORT, () => { console.log(`Server is listening on ${PORT}`) });

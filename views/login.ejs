@@ -13,6 +13,9 @@
                 <div id="inputs">
                     <input type="email" name="email" id="email" required>
                     <input type="password" name="password" id="password"required>
+                    <% if(error){%>
+                        <span id="errorMessage"><%= error%></span>
+                        <% }%>
                 </div>
 
             </div>

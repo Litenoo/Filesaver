@@ -34,8 +34,7 @@ function initAuth(passport, getUserByEmail, getUserById) {
     })
 }
 
-async function comparePass(password, user) { //userPass is undefined
-    console.log(password + ' & ' + user.password);
+async function comparePass(password, user) {
     return await bcrypt.compare(password, user.password);
 }
 

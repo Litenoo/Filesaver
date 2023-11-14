@@ -94,3 +94,7 @@ h1{
 #submit{
     width: 100%;
 }
+#errorMessage{
+    color: red;
+    font-size: 12px;
+}
