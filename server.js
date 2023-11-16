@@ -13,7 +13,7 @@ const initAuth = require('./auth.js');
 
 let db = new sqlite3.Database('./mydatabase.db', sqlite3.OPEN_READWRITE, (err) => {
     if (err) { console.error(err) } else {
-        let query = 'CREATE TABLE IF NOT EXISTS users(id INTEGER PRIMARY KEY, username VARCHAR(255) NOT NULL, email VARCHAR(255) NOT NULL, password VARCHAR(255), premiumstat INT NOT NULL)';
+        let query = 'CREATE TABLE IF NOT EXISTS users(id INTEGER PRIMARY KEY, username VARCHAR(255) NOT NULL, email VARCHAR(255) NOT NULL, password VARCHAR(255))';
         db.run(query);
     }
 })
@@ -21,7 +21,7 @@ app.use(methodOverride('_method'));
 
 initAuth(
     passport,
-    function getUserByEmail(email) { // Reduce code length here and change it to async/await:
+    function getUserByEmail(email) { // async/await
         return new Promise((resolve, reject) => {
             db.get(`SELECT * FROM users WHERE email = '${email}'`, [], (err, user) => {
                 if (err) {
@@ -49,20 +49,27 @@ app.use(session({
     secret: process.env.SESSION_SECRET,
     resave: false,
     saveUninitialized: false,
-}))
+}));
+app.use(passport.initialize());
 app.use(passport.session());
-
-app.get('/', (req, res) => {
-    if (req.user) {
-        res.render('index.ejs', { name: req.user.username, premiumStatus: 'Non-Premium' });
-    } else {
-        res.redirect('login');
-    }
+app.use((req,res,next)=>{
+    res.locals.req = req;
+    next();
 })
 
+app.get('/', (req, res) => {
+    if (req.user) { 
+        console.log('The req.session is: ', req.user);
+        res.render('index.ejs', { name: req.user });
+    } else {
+        res.redirect('/login');
+    }
+});
+
+//make router
 app.get('/fileMenager', (req, res) => {
     if (req.user) {
-        res.render('fileMenager.ejs', { name: req.user.username, premiumStatus: 'Non-Premium' });
+        res.render('index.ejs', { name: req.user.username });
     } else {
         res.redirect('login');
     }
@@ -77,13 +84,17 @@ app.get('/register', (req, res) => {
 })
 
 app.get('/login', (req, res) => {
-    let error = req.flash().error
-    res.render('login.ejs', {error});
+    if(checkLogged(req)){
+        res.redirect('/');
+        return 0;
+    }
+    let error = req.flash().error;
+    res.render('login.ejs', { error });
 })
 
 app.post('/register', async (req, res) => {
     const hashedPass = await bcrypt.hash(req.body.password, 10);
-    let query = `INSERT INTO users (username, email, password, premiumstat) VALUES ('${req.body.username}', '${req.body.email}', '${hashedPass}', 0)`;
+    let query = `INSERT INTO users (username, email, password) VALUES ('${req.body.username}', '${req.body.email}', '${hashedPass}')`;
     db.run(query);
     res.redirect('/login');
 })
@@ -92,11 +103,19 @@ app.post('/login', passport.authenticate('local', {
     successRedirect: '/',
     failureRedirect: '/login',
     failureFlash: true,
+},(req,res)=>{
+    console.log(req.user)
 }))
 
 app.delete('/logout', (req, res) => {
     req.session.destroy();
     res.redirect('/login');
 })
+
+function checkLogged(req) {
+    if (req.user) {
+        return true;
+    }
+}
 
 app.listen(PORT, () => { console.log(`Server is listening on ${PORT}`) });
