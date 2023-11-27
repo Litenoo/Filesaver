@@ -32,14 +32,14 @@ let db = new sqlite3.Database('./serverdb.db', sqlite3.OPEN_READWRITE, (err) => 
 
 app.get('/', isAuth, async (req, res) => {
     let imgRef = path.join('images', 'userProfiles', await getProfPic(session.user.id));
-    res.render('index.ejs', { 
-        name: session.user.username, 
-        imgRef: imgRef
+    res.render('index.ejs', {
+        name: session.user.username,
+        imgRef: imgRef,
     });
 });
 
-app.get('/register',isNotAuth, (req, res) => {
-        res.render('register.ejs');
+app.get('/register', isNotAuth, (req, res) => {
+    res.render('register.ejs');
 });
 
 app.get('/login', isNotAuth, (req, res) => {
@@ -47,9 +47,9 @@ app.get('/login', isNotAuth, (req, res) => {
     session.message = null;
 });
 
-app.get('/profile',isAuth, async (req, res) => { //move to router
-        let picRef = await getProfPic(session.user.id);
-        res.render('profile.ejs', { name: session.user.username, imgRef: path.join('images', 'userProfiles', picRef) });
+app.get('/profile', isAuth, async (req, res) => { //move to router
+    let picRef = await getProfPic(session.user.id);
+    res.render('profile.ejs', { name: session.user.username, imgRef: path.join('images', 'userProfiles', picRef) });
 });
 
 app.post('/register', async (req, res) => {
@@ -66,7 +66,6 @@ app.post('/register', async (req, res) => {
 
 app.post('/login', async (req, res) => {
     let response = await auth(req.body.email, req.body.password);
-    console.log('response : ', response);
     if (response.user) {
         session.user = response.user;
         res.redirect('/');

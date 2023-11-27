@@ -10,7 +10,7 @@ let db = new sqlite3.Database('./serverdb.db', sqlite3.OPEN_READWRITE, (err) => 
     }
 })
 
-async function auth(email, pass) { //compare with before project
+async function auth(email, pass) {
     let query = 'SELECT * FROM users WHERE email = ? LIMIT 1';
     let user = await getRecord(query, [email]);
     if (!user) {
