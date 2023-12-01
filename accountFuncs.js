@@ -23,6 +23,37 @@ async function auth(email, pass) {
     }
 }
 
+async function register(pass, email, username) {
+    let hashedPass = await bcrypt.hash(pass, 10);
+    db.run('INSERT INTO users (username, password, email) VALUES (?,?,?)', [username, hashedPass, email], (err) => {
+        if (err) {
+            return null;
+        }
+    });
+    async function setProfPic() {
+        return new Promise((resolve,reject)=>{
+            try {
+                db.get('SELECT id FROM users WHERE email = ?', [email], (err, result) => {
+                    if (err) {
+                        throw err;
+                    } else {
+                        resolve (result);
+                    }
+                })
+            } catch (err) {
+                reject(err);
+            }
+        })
+    }
+
+    let userId = await setProfPic();
+    db.run('INSERT INTO profPics (user_id, pic_reference) VALUES (?,?)', [userId.id, 'common.png'], (err) => {
+        if (err) {
+            return null;
+        }
+    });
+}
+
 function getRecord(query, data) { //Change to async/await
     return new Promise((resolve, reject) => {
         db.get(query, data, (err, record) => {
@@ -32,12 +63,6 @@ function getRecord(query, data) { //Change to async/await
                 resolve(record);
             }
         })
-    })
-}
-
-async function dbRun(query, data) {
-    db.run(query, data, (err) => {
-        if (err) { console.error(err.message) };
     })
 }
 
@@ -61,4 +86,4 @@ async function comparePass(input, password) {
     return await bcrypt.compare(input, password);
 }
 
-module.exports = { auth, getProfPic };
+module.exports = { auth, getProfPic, register, getRecord };

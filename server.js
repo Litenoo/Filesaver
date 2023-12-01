@@ -5,12 +5,12 @@ const bcrypt = require('bcrypt');
 const sqlite3 = require('sqlite3').verbose();
 const methodOverride = require('method-override');
 const session = require('express-session');
+const multer = require('multer');
 const app = express();
 const fs = require('fs');
-const path = require('path')
+const path = require('path');
 
-//const router1 = require('./routes.js');
-const { auth, getProfPic } = require('./functions');
+const { auth, getProfPic, register, getRecord } = require('./accountFuncs');
 
 app.set({ 'view-engine': 'ejs' });
 app.use(methodOverride('_method'));
@@ -29,6 +29,20 @@ let db = new sqlite3.Database('./serverdb.db', sqlite3.OPEN_READWRITE, (err) => 
         db.run(query);
     }
 });
+
+const storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        cb(null, path.join(__dirname, 'public', 'images', 'userProfiles'));
+    },
+    filename: function (req, file, cb) {
+        // Assuming you want to set the filename to the user id with a .jpg extension
+        const userId = session.user.id; // Replace this with your actual user ID retrieval logic
+        const filename = `${userId}.jpg`;
+        cb(null, filename);
+    }
+});
+
+const upload = multer({ storage: storage });
 
 app.get('/', isAuth, async (req, res) => {
     let imgRef = path.join('images', 'userProfiles', await getProfPic(session.user.id));
@@ -53,15 +67,12 @@ app.get('/profile', isAuth, async (req, res) => { //move to router
 });
 
 app.post('/register', async (req, res) => {
-    const hashedPass = await bcrypt.hash(req.body.password, 10);
-    let query = `INSERT INTO users (username, email, password) VALUES (?,?,?)`;
-    db.run(query, [req.body.username, req.body.email, hashedPass], (err) => {
-        if (err) {
-            res.redirect('/register');
-        } else {
-            res.redirect('/login');
-        }
-    });
+    let output = register(req.body.password, req.body.email, req.body.username);
+    if (output === null) {
+        res.redirect('/register');
+    } else {
+        res.redirect('/login')
+    }
 });
 
 app.post('/login', async (req, res) => {
@@ -83,6 +94,25 @@ app.delete('/logout', (req, res) => { //check if this is the best method to make
     });
 });
 
+
+app.put('/profileUpload', upload.single('avatar'), async (req, res) => { //make here change to db, for route :P
+    if (req.file) {
+        let filename = req.file.filename;
+        console.log(req.file);
+        db.run(`UPDATE profPics SET pic_reference = ? WHERE user_id = ?`,[filename, session.user.id], (err) => {
+            if(err){
+                console.error(err);
+            }else{
+                console.log('Everything went well');
+            }
+        })
+        res.redirect('/');
+    } else {
+        console.error('Error on fileUpload');
+    }
+})
+
+
 function isAuth(req, res, next) {
     if (!session.user) {
         return res.redirect('/login');
@@ -93,9 +123,9 @@ function isAuth(req, res, next) {
 
 function isNotAuth(req, res, next) {
     if (session.user) {
-        return res.redirect('/')
+        return res.redirect('/');
     } else {
-        next()
+        next();
     }
 }
 

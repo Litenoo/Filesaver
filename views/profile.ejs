@@ -10,7 +10,10 @@
                 </span>
             </div>
             <div id="options">
-                <form action="/profileUpload"><button type="submit">Upload profile picture</button></form>
+                <form action="/profileUpload?_method=PUT" method="POST" enctype="multipart/form-data">
+                    <input type="file" name="avatar">Select profile picture</input>
+                    <button type="submit">Upload Profile picture</button>
+                </form>
                 <form action="/logout?_method=DELETE" method="POST"><button type="submit">Log out</button></form>
             </div>
         </div>
