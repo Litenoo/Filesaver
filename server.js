@@ -1,16 +1,15 @@
 require('dotenv').config();
 
 const express = require("express");
-const bcrypt = require('bcrypt');
-const sqlite3 = require('sqlite3').verbose();
 const methodOverride = require('method-override');
 const session = require('express-session');
 const multer = require('multer');
+const sqlite3 = require('sqlite3').verbose();
 const app = express();
-const fs = require('fs');
 const path = require('path');
+const FMRouter = require('./Filesaving')
 
-const { auth, getProfPic, register, getRecord } = require('./accountFuncs');
+const { auth, getProfPic, register } = require('./accountFuncs');
 
 app.set({ 'view-engine': 'ejs' });
 app.use(methodOverride('_method'));
@@ -21,6 +20,8 @@ app.use(session({
     resave: false,
     saveUninitialized: false,
 }));
+app.use('/fileMenager', FMRouter);
+
 
 
 let db = new sqlite3.Database('./serverdb.db', sqlite3.OPEN_READWRITE, (err) => {
@@ -35,8 +36,7 @@ const storage = multer.diskStorage({
         cb(null, path.join(__dirname, 'public', 'images', 'userProfiles'));
     },
     filename: function (req, file, cb) {
-        // Assuming you want to set the filename to the user id with a .jpg extension
-        const userId = session.user.id; // Replace this with your actual user ID retrieval logic
+        const userId = session.user.id;
         const filename = `${userId}.jpg`;
         cb(null, filename);
     }
@@ -45,10 +45,9 @@ const storage = multer.diskStorage({
 const upload = multer({ storage: storage });
 
 app.get('/', isAuth, async (req, res) => {
-    let imgRef = path.join('images', 'userProfiles', await getProfPic(session.user.id));
     res.render('index.ejs', {
         name: session.user.username,
-        imgRef: imgRef,
+        imgRef: session.imgRef,
     });
 });
 
@@ -56,22 +55,32 @@ app.get('/register', isNotAuth, (req, res) => {
     res.render('register.ejs');
 });
 
-app.get('/login', isNotAuth, (req, res) => {
-    res.render('login.ejs', { message: session.message });
+app.get('/login', isNotAuth, async (req, res) => {
+    res.render('login.ejs', {
+        message: session.message
+    });
+
     session.message = null;
 });
 
-app.get('/profile', isAuth, async (req, res) => { //move to router
-    let picRef = await getProfPic(session.user.id);
-    res.render('profile.ejs', { name: session.user.username, imgRef: path.join('images', 'userProfiles', picRef) });
+app.get('/profile', isAuth, async (req, res) => {
+    res.render('profile.ejs', {
+        name: session.user.username,
+        imgRef: session.imgRef,
+    });
 });
 
 app.post('/register', async (req, res) => {
-    let output = register(req.body.password, req.body.email, req.body.username);
+    let output = register(
+        req.body.password,
+        req.body.email,
+        req.body.username
+    );
+
     if (output === null) {
         res.redirect('/register');
     } else {
-        res.redirect('/login')
+        res.redirect('/login');
     }
 });
 
@@ -79,6 +88,12 @@ app.post('/login', async (req, res) => {
     let response = await auth(req.body.email, req.body.password);
     if (response.user) {
         session.user = response.user;
+        session.imgRef = path.join(
+            'images',
+            'userProfiles',
+            await getProfPic(session.user.id)
+        );
+
         res.redirect('/');
     } else {
         session.message = response.message;
@@ -86,32 +101,29 @@ app.post('/login', async (req, res) => {
     }
 });
 
-app.delete('/logout', (req, res) => { //check if this is the best method to make it
+app.delete('/logout', (req, res) => {
     req.session.destroy((err) => {
-        session.user = null
         if (err) console.error(err);
-        res.redirect('/login');
     });
+
+    session.user = null;
+    res.redirect('/login');
 });
 
-
-app.put('/profileUpload', upload.single('avatar'), async (req, res) => { //make here change to db, for route :P
+app.put('/profileUpload', upload.single('avatar'), async (req, res) => {
     if (req.file) {
-        let filename = req.file.filename;
-        console.log(req.file);
-        db.run(`UPDATE profPics SET pic_reference = ? WHERE user_id = ?`,[filename, session.user.id], (err) => {
-            if(err){
-                console.error(err);
-            }else{
-                console.log('Everything went well');
-            }
-        })
-        res.redirect('/');
-    } else {
-        console.error('Error on fileUpload');
+        try {
+            let filename = req.file.filename;
+            console.log(req.file);
+            db.run(`UPDATE profPics SET pic_reference = ? WHERE user_id = ?`, [filename, session.user.id], (err) => {
+                if (err) { console.error(err) };
+            })
+            res.redirect('/');
+        } catch (err) {
+            console.error('Error on fileUpload');
+        }
     }
 })
-
 
 function isAuth(req, res, next) {
     if (!session.user) {
@@ -130,3 +142,5 @@ function isNotAuth(req, res, next) {
 }
 
 app.listen(3000, () => { console.log(`Server is listening on 3000`) });
+
+module.exports = session;

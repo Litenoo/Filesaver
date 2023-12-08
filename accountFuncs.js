@@ -1,6 +1,5 @@
 const sqlite3 = require('sqlite3');
 const bcrypt = require('bcrypt');
-const path = require('path')
 
 let db = new sqlite3.Database('./serverdb.db', sqlite3.OPEN_READWRITE, (err) => {
     if (err) {
@@ -30,16 +29,17 @@ async function register(pass, email, username) {
             return null;
         }
     });
+
     async function setProfPic() {
-        return new Promise((resolve,reject)=>{
+        return new Promise((resolve, reject) => {
             try {
                 db.get('SELECT id FROM users WHERE email = ?', [email], (err, result) => {
                     if (err) {
                         throw err;
                     } else {
-                        resolve (result);
+                        resolve(result);
                     }
-                })
+                });
             } catch (err) {
                 reject(err);
             }
@@ -48,13 +48,11 @@ async function register(pass, email, username) {
 
     let userId = await setProfPic();
     db.run('INSERT INTO profPics (user_id, pic_reference) VALUES (?,?)', [userId.id, 'common.png'], (err) => {
-        if (err) {
-            return null;
-        }
+        if (err) { return null; }
     });
 }
 
-function getRecord(query, data) { //Change to async/await
+function getRecord(query, data) {
     return new Promise((resolve, reject) => {
         db.get(query, data, (err, record) => {
             if (err) {
@@ -62,8 +60,8 @@ function getRecord(query, data) { //Change to async/await
             } else {
                 resolve(record);
             }
-        })
-    })
+        });
+    });
 }
 
 function getProfPic(user_id) {
@@ -82,8 +80,15 @@ function getProfPic(user_id) {
     })
 }
 
+function deleteAcc(email) {
+    let query = 'DELETE FROM users WHERE email = ?';
+    db.run(query, [email], (err) => {
+        if (err) { console.error(err) };
+    })
+}
+
 async function comparePass(input, password) {
     return await bcrypt.compare(input, password);
 }
 
-module.exports = { auth, getProfPic, register, getRecord };
+module.exports = { auth, getProfPic, register, getRecord, deleteAcc };
