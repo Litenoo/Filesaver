@@ -1,25 +1,23 @@
 const express = require('express');
+const app = express();
 const FMrouter = express.Router();
 const session = require('express-session');
-const app = express();
 const multer = require('multer');
 const fsProm = require('fs').promises;
 const fs = require('fs');
-const path = require('path');
-const sqlite = require('sqlite3').verbose();
 const bodyParser = require('body-parser');
+const path = require('path');
+
+//Setup
 
 app.use(bodyParser.json());
-
-
 FMrouter.use(express.urlencoded({ extended: false }));
 
-const db = new sqlite.Database('./serverdb.db', sqlite.OPEN_READWRITE, (err) => {
-    if (err) {
-        console.error('Database connection failed');
-    }
-})
-
+FMrouter.use(session({
+    secret: process.env.SESSION_SECRET,
+    resave: false,
+    saveUninitialized: false,
+}));
 
 const storage = multer.diskStorage({
     destination: function async(req, file, cb) {
@@ -34,28 +32,15 @@ const storage = multer.diskStorage({
     },
 });
 
-function makeDirection(finalPath, folderName) {
-    fs.mkdir(finalPath + '/' + folderName, (err) => {
-        if (err) console.error('failed to create directory', err);
-    });
-}
-
 const upload = multer({ storage: storage });
 
-FMrouter.use(session({
-    secret: process.env.SESSION_SECRET,
-    resave: false,
-    saveUninitialized: false,
-}));
+//Routing
 
-FMrouter.get('/', (req, res) => {
+FMrouter.get('/',isAuth , (req, res) => {
     res.render('fileMenager.ejs', {
         name: session.user.username,
         imgRef: session.imgRef,
     });
-});
-
-FMrouter.put('/uploadFile', upload.single('fileUpload'), (req, res) => {
 });
 
 FMrouter.put('/newFolder', async (req, res) => {
@@ -67,23 +52,40 @@ FMrouter.put('/newFolder', async (req, res) => {
     res.send('Folder created successfully');
 });
 
+FMrouter.put('/uploadFile', upload.single('fileUpload'), (req, res) => {
+
+});
+
 FMrouter.put('/deleteFile', upload.single('fileUpload'), (req, res) => {
 
 });
 
-FMrouter.post('/structure', async (req, res) => {
+FMrouter.post('/structure', async (req, res) => { //Change it to GET request
     res.json({ files: await readDir(req.body.path) });
 });
 
+
+//Functions
+
+function makeDirection(finalPath, folderName) {
+    fs.mkdir(finalPath + '/' + folderName, (err) => {
+        if (err) console.error('failed to create directory', err);
+    });
+}
+
 async function readDir(path) {
-    if (path == undefined) {
-        path = '';
-    }
+    if (path == undefined) { path = '' };
     try {
         let files = await fsProm.readdir(`./public/usersFiles/${session.user.id}` + path);
         return files;
-    } catch (err) {
-        console.error(err);
+    } catch (err) { console.error(err); }
+}
+
+function isAuth(req, res, next) {
+    if (!session.user) {
+        return res.redirect('/login');
+    } else {
+        next();
     }
 }
 
