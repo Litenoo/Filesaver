@@ -30,11 +30,6 @@ const storage = multer.diskStorage({
     },
     filename: (req, file, cb) => {
         let filePath = req.body.fileName + path.extname(file.originalname);
-        let query = 'INSERT INTO usrFiles (user_id, file_reference) VALUES (?,?);';
-        db.run(query, [session.user.id, filePath], (err) => {
-            if (err) console.error(err);
-        });
-        console.log(filePath);
         cb(null, filePath);
     },
 });
@@ -61,19 +56,36 @@ FMrouter.get('/', (req, res) => {
 });
 
 FMrouter.put('/uploadFile', upload.single('fileUpload'), (req, res) => {
-
 });
 
 FMrouter.put('/newFolder', async (req, res) => {
     let pathF = path.join(__dirname, 'public', 'usersFiles', `${session.user.id}`);
-    console.log(req.body.folderName);
-    makeDirection(pathF , req.body.folderName);
+    if (!fs.existsSync(path.join(__dirname, 'public', 'usersFiles', `${session.user.id}`))) {
+        makeDirection(path.join(__dirname, 'public', 'usersFiles'), `${session.user.id}`);
+    }
+    makeDirection(pathF, req.body.folderName);
     res.send('Folder created successfully');
 });
 
-FMrouter.put('/deleteFile', upload.single('fileUpload'), (req, res) => { 
+FMrouter.put('/deleteFile', upload.single('fileUpload'), (req, res) => {
 
 });
+
+FMrouter.post('/structure', async (req, res) => {
+    res.json({ files: await readDir(req.body.path) });
+});
+
+async function readDir(path) {
+    if (path == undefined) {
+        path = '';
+    }
+    try {
+        let files = await fsProm.readdir(`./public/usersFiles/${session.user.id}` + path);
+        return files;
+    } catch (err) {
+        console.error(err);
+    }
+}
 
 module.exports = FMrouter;
 
