@@ -40,6 +40,7 @@ FMrouter.get('/',isAuth , (req, res) => {
     res.render('fileMenager.ejs', {
         name: session.user.username,
         imgRef: session.imgRef,
+        userId: session.user.id,
     });
 });
 
@@ -61,7 +62,7 @@ FMrouter.put('/deleteFile', upload.single('fileUpload'), (req, res) => {
 });
 
 FMrouter.post('/structure', async (req, res) => { //Change it to GET request
-    res.json({ files: await readDir(req.body.path) });
+    res.json({ files: await readDir(req.body.path)});
 });
 
 

@@ -1,11 +1,13 @@
 <!DOCTYPE html>
 <html lang="pl">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Filesaving</title>
     <link rel="stylesheet" href="css/fileMenager.css">
 </head>
+
 <body>
     <div id="container">
 
@@ -29,31 +31,33 @@
                 </form>
             </div>
         </div>
-    
+
         <div id="mainContent">
             <div id="fileMenager">
-                <span id="currentPath"><!--Here will be displayed path fExmple. (Nickname/MyFolder/image.jpg)-->></span>
+                <span id="currentPath"> >  <span id="path"><%=userId%></span></span>
                 <div id="options">
                     <iframe name="dummyFrame" id="dummyFrame" style="display: none;"></iframe>
-    
+
                     <form action="/fileMenager/newFolder?_method=PUT" method="POST" target="dummyFrame">
                         <input type="text" name="folderName" id="folderName" placeholder="Folder name">
                         <button type="submit">Add folder</button>
                     </form>
 
 
-                    <form action="/fileMenager/deleteFile?_method=PUT" method="POST" target="dummyFrame" enctype="multipart/form-data">
+                    <form action="/fileMenager/deleteFile?_method=PUT" method="POST" target="dummyFrame"
+                        enctype="multipart/form-data">
                         <button type="submit">Delete</button>
                     </form>
-                    <form action="/fileMenager/uploadFile?_method=PUT" method="POST" target="dummyFrame" enctype="multipart/form-data">
+                    <form action="/fileMenager/uploadFile?_method=PUT" method="POST" target="dummyFrame"
+                        enctype="multipart/form-data">
                         <input type="text" name="fileName" id="fileName" placeholder="Final file name "></input>
                         <input type="file" name="fileUpload" id="fileUpload"></input>
                         <button type="submit">Upload file</button>
                     </form>
                 </div>
-    
+
                 <div id="fileExplorer" name="fileExplorer">
-                    <!-- Make EJS tags here, and users files will be loaded here from backend-->
+
                 </div>
             </div>
         </div>
@@ -61,5 +65,5 @@
 
     <script defer src="JS/dataStructure.js"></script>
 </body>
-</html>
 
+</html>
