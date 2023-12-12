@@ -30,6 +30,7 @@ body {
 #topProfile img {
     width: 42px;
     height: 42px;
+    border-radius: 50%;
 }
 
 #profData {
@@ -37,11 +38,6 @@ body {
     flex-direction: column;
     font-size: 14px;
     justify-content: center;
-}
-
-#premiumStat {
-    font-size: 10px;
-    color: gray;
 }
 
 #topOptions {
@@ -83,12 +79,14 @@ body {
     display: flex;
     flex-direction: column;
 }
-#fileExplorer{
+
+#fileExplorer {
     display: flex;
 }
+
 #fileExplorer img {
-    width: 50px;
-    height: 50px;
+    max-width: 50px;
+    max-height: 50px;
 }
 
 .file {
@@ -97,7 +95,6 @@ body {
     flex-direction: column;
     font-size: 13px;
     height: 70px;
-    width: 70px;
     text-align: center;
     overflow-wrap: break-word;
     padding: 12px;

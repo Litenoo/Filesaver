@@ -52,7 +52,7 @@ app.get('/', isAuth, async (req, res) => {
 });
 
 app.get('/register', isNotAuth, (req, res) => {
-    res.render('register.ejs');
+    res.render('register.ejs', {errorMsg: ''}); // make here error flash like in /login
 });
 
 app.get('/login', isNotAuth, async (req, res) => {
@@ -71,17 +71,23 @@ app.get('/profile', isAuth, async (req, res) => {
 });
 
 app.post('/register', async (req, res) => {
-    let output = register(
+    let output = await register(
         req.body.password,
         req.body.email,
         req.body.username
     );
-
-    if (output === null) {
-        res.redirect('/register');
-    } else {
-        res.redirect('/login');
+    console.log(output);
+    if(output !== undefined){
+        res.render('register.ejs', {errorMsg: output.err})
+    }else{
+        res.redirect('/login')
     }
+
+    // if (output === null) {
+    //     res.redirect('/register');
+    // } else {
+    //     res.redirect('/login');
+    // }
 });
 
 app.post('/login', async (req, res) => {

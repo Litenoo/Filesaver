@@ -24,13 +24,31 @@ async function auth(email, pass) {
 
 async function register(pass, email, username) {
     let hashedPass = await bcrypt.hash(pass, 10);
+
+    let validate = await new Promise((resolve, reject) => {
+        db.get('SELECT * FROM users where email = ?', [email], (err, record) => {
+            if (err) { console.error(err) };
+            resolve(record);
+        })
+    })
+
+    console.log(validate)
+
+    if (validate) {
+        if(validate.email === email){
+        return {err: 'There is already user with that email'} 
+        }else if(validate.username === username){
+           return {err: 'There is already user with that username'} 
+        }
+    }
+
     db.run('INSERT INTO users (username, password, email) VALUES (?,?,?)', [username, hashedPass, email], (err) => {
         if (err) {
             return null;
         }
     });
 
-    async function setProfPic() {
+    async function getUserId() {  // recognize what the fuck is goin out here 
         return new Promise((resolve, reject) => {
             try {
                 db.get('SELECT id FROM users WHERE email = ?', [email], (err, result) => {
@@ -46,7 +64,7 @@ async function register(pass, email, username) {
         })
     }
 
-    let userId = await setProfPic();
+    let userId = await getUserId();
     db.run('INSERT INTO profPics (user_id, pic_reference) VALUES (?,?)', [userId.id, 'common.png'], (err) => {
         if (err) { return null; }
     });

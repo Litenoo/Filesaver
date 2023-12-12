@@ -34,10 +34,6 @@ body{
     font-size: 14px;
     justify-content: center;
 }
-#premiumStat{
-    font-size: 10px;
-    color: gray;
-}
 #topOptions{
     display: flex;
     justify-content: space-between;

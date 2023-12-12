@@ -57,7 +57,7 @@ FMrouter.put('/uploadFile', upload.single('fileUpload'), (req, res) => {
 
 });
 
-FMrouter.put('/deleteFile', upload.single('fileUpload'), (req, res) => {
+FMrouter.put('/deleteFile', upload.single('fileUpload'), (req, res) => { //make that
 
 });
 
