@@ -25,20 +25,29 @@ async function auth(email, pass) {
 async function register(pass, email, username) {
     let hashedPass = await bcrypt.hash(pass, 10);
 
-    let validate = await new Promise((resolve, reject) => {
-        db.get('SELECT * FROM users where email = ?', [email], (err, record) => {
+    let validateEmail = await new Promise((resolve, reject) => {
+        db.get('SELECT email FROM users where email = ?', [email], (err, record) => {
             if (err) { console.error(err) };
             resolve(record);
         })
     })
 
-    console.log(validate)
+    let validateUsername = await new Promise((resolve, reject) => {
+        db.get('SELECT username FROM users WHERE username = ?', [username], (err, record) => {
+            if (err) { console.error(err) };
+            console.log(record);
+            resolve(record);
+        })
+    })
 
-    if (validate) {
-        if(validate.email === email){
-        return {err: 'There is already user with that email'} 
-        }else if(validate.username === username){
-           return {err: 'There is already user with that username'} 
+    if (validateEmail) {
+            return { err: 'There is already user with that email' };
+    }
+
+    if (validateUsername) {
+        console.log(validateUsername);
+        if(validateUsername.username === username){
+            return { err: 'There is already user with that username' };
         }
     }
 
@@ -48,23 +57,21 @@ async function register(pass, email, username) {
         }
     });
 
-    async function getUserId() {  // recognize what the fuck is goin out here 
-        return new Promise((resolve, reject) => {
-            try {
-                db.get('SELECT id FROM users WHERE email = ?', [email], (err, result) => {
-                    if (err) {
-                        throw err;
-                    } else {
-                        resolve(result);
-                    }
-                });
-            } catch (err) {
-                reject(err);
-            }
-        })
-    }
+    let userId = await new Promise((resolve, reject) => {
+        try {
+            db.get('SELECT id FROM users WHERE email = ?', [email], (err, result) => {
+                if (err) {
+                    throw err;
+                } else {
+                    resolve(result);
+                }
+            });
+        } catch (err) {
+            reject(err);
+        }
+    });
 
-    let userId = await getUserId();
+
     db.run('INSERT INTO profPics (user_id, pic_reference) VALUES (?,?)', [userId.id, 'common.png'], (err) => {
         if (err) { return null; }
     });
