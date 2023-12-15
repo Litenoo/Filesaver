@@ -36,7 +36,7 @@ const upload = multer({ storage: storage });
 
 //Routing
 
-FMrouter.get('/',isAuth , (req, res) => {
+FMrouter.get('/', isAuth, (req, res) => {
     res.render('fileMenager.ejs', {
         name: session.user.username,
         imgRef: session.imgRef,
@@ -62,8 +62,12 @@ FMrouter.put('/deleteFile', upload.single('fileUpload'), (req, res) => { //make 
 });
 
 FMrouter.post('/structure', async (req, res) => { //Change it to GET request
-    res.json({ files: await readDir(req.body.path)});
+    res.json({ files: await readDir(req.body.path) });
 });
+
+FMrouter.get('/getForm', async (req,res)=>{ // make json request here
+    await res.sendFile(path.join(__dirname,'forms.json'))
+})
 
 
 //Functions

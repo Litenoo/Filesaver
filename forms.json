@@ -1,0 +1,6 @@
+{
+    "delete": "<form action=\"/fileMenager/deleteFile?_method=PUT\" method=\"POST\" target=\"dummyFrame\" enctype=\"multipart/form-data\">Delete file/Folder<button type=\"submit\">Delete</button></form>",
+    "edit": "",
+    "newFolder": " <form action=\"/fileMenager/newFolder?_method=PUT\" method=\"POST\" target=\"dummyFrame\">Create New Folder<input type=\"text\" name=\"folderName\" id=\"folderName\" placeholder=\"Folder name\"><button type=\"submit\">Add folder</button></form>",
+    "upload": "<form action=\"/fileMenager/uploadFile?_method=PUT\" method=\"POST\" target=\"dummyFrame\" enctype=\"multipart/form-data\">Upload new file<input type=\"text\" name=\"fileName\" id=\"fileName\" placeholder=\"Final file name\"></input><input type=\"file\" name=\"fileUpload\" id=\"fileUpload\"> </input><label for=\"fileUpload\" id=\"fileUploadLabel\">Select File</label><button type=\"submit\">Upload file</button></form>"
+}

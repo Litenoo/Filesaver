@@ -52,14 +52,13 @@ app.get('/', isAuth, async (req, res) => {
 });
 
 app.get('/register', isNotAuth, (req, res) => {
-    res.render('register.ejs', {errorMsg: ''}); // make here error flash like in /login
+    res.render('register.ejs', {errorMsg: ''}); // Decide which error message system is better and standarize it
 });
 
 app.get('/login', isNotAuth, async (req, res) => {
     res.render('login.ejs', {
         message: session.message
     });
-
     session.message = null;
 });
 
@@ -74,20 +73,14 @@ app.post('/register', async (req, res) => {
     let output = await register(
         req.body.password,
         req.body.email,
-        req.body.username
+        req.body.username,
     );
     console.log(output);
     if(output !== undefined){
-        res.render('register.ejs', {errorMsg: output.err})
+        res.render('register.ejs', {errorMsg: output.err});
     }else{
-        res.redirect('/login')
+        res.redirect('/login');
     }
-
-    // if (output === null) {
-    //     res.redirect('/register');
-    // } else {
-    //     res.redirect('/login');
-    // }
 });
 
 app.post('/login', async (req, res) => {

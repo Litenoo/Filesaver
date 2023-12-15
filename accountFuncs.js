@@ -9,7 +9,7 @@ let db = new sqlite3.Database('./serverdb.db', sqlite3.OPEN_READWRITE, (err) => 
     }
 })
 
-async function auth(email, pass) {
+async function auth(email, pass) { 
     let query = 'SELECT * FROM users WHERE email = ? LIMIT 1';
     let user = await getRecord(query, [email]);
     if (!user) {
@@ -22,30 +22,17 @@ async function auth(email, pass) {
     }
 }
 
-async function register(pass, email, username) {
+async function register(pass, email, username) {// Delete duplicates
     let hashedPass = await bcrypt.hash(pass, 10);
 
-    let validateEmail = await new Promise((resolve, reject) => {
-        db.get('SELECT email FROM users where email = ?', [email], (err, record) => {
-            if (err) { console.error(err) };
-            resolve(record);
-        })
-    })
-
-    let validateUsername = await new Promise((resolve, reject) => {
-        db.get('SELECT username FROM users WHERE username = ?', [username], (err, record) => {
-            if (err) { console.error(err) };
-            console.log(record);
-            resolve(record);
-        })
-    })
+    let validateEmail = await getRecord('SELECT email FROM users where email = ?', [email])
+    let validateUsername = await getRecord('SELECT username FROM users WHERE username = ?',[username])
 
     if (validateEmail) {
             return { err: 'There is already user with that email' };
     }
 
     if (validateUsername) {
-        console.log(validateUsername);
         if(validateUsername.username === username){
             return { err: 'There is already user with that username' };
         }
@@ -57,20 +44,7 @@ async function register(pass, email, username) {
         }
     });
 
-    let userId = await new Promise((resolve, reject) => {
-        try {
-            db.get('SELECT id FROM users WHERE email = ?', [email], (err, result) => {
-                if (err) {
-                    throw err;
-                } else {
-                    resolve(result);
-                }
-            });
-        } catch (err) {
-            reject(err);
-        }
-    });
-
+    let userId = await getRecord('SELECT id FROM users WHERE email = ?', [email])
 
     db.run('INSERT INTO profPics (user_id, pic_reference) VALUES (?,?)', [userId.id, 'common.png'], (err) => {
         if (err) { return null; }
@@ -79,13 +53,17 @@ async function register(pass, email, username) {
 
 function getRecord(query, data) {
     return new Promise((resolve, reject) => {
-        db.get(query, data, (err, record) => {
-            if (err) {
-                reject(err);
-            } else {
-                resolve(record);
-            }
-        });
+        try{
+            db.get(query, data, (err, record) => {
+                if (err) {
+                    reject(err);
+                } else {
+                    resolve(record);
+                }
+            });
+        }catch(err){
+            reject(err);
+        }
     });
 }
 

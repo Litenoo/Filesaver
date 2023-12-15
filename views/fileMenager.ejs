@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Filesaving</title>
+    <link rel="stylesheet" href="css/homePage.css">
     <link rel="stylesheet" href="css/fileMenager.css">
 </head>
 
@@ -34,32 +35,26 @@
 
         <div id="mainContent">
             <div id="fileMenager">
-                <span id="currentPath"> >  <span id="path"><%=userId%></span></span>
                 <div id="options">
                     <iframe name="dummyFrame" id="dummyFrame" style="display: none;"></iframe>
 
-                    <form action="/fileMenager/newFolder?_method=PUT" method="POST" target="dummyFrame">
-                        <input type="text" name="folderName" id="folderName" placeholder="Folder name">
-                        <button type="submit">Add folder</button>
-                    </form>
-
-
-                    <form action="/fileMenager/deleteFile?_method=PUT" method="POST" target="dummyFrame"
-                        enctype="multipart/form-data">
-                        <button type="submit">Delete</button>
-                    </form>
-                    
-                    <form action="/fileMenager/uploadFile?_method=PUT" method="POST" target="dummyFrame"
-                        enctype="multipart/form-data">
-                        <input type="text" name="fileName" id="fileName" placeholder="Final file name "></input>
-                        <input type="file" name="fileUpload" id="fileUpload"></input>
-                        <button type="submit">Upload file</button>
-                    </form>
+                    <div id="optionButtons">
+                        <div class="option" id="upload"><img src="images/upload.png" alt="upload"></div>
+                        <div class="option" id="newFolder"><img src="images/newFolder.png" alt="newFolder"></div>
+                        <div class="option" id="delete"><img src="images/delete.png" alt="delete"></div>
+                        <div class="option" id="edit"><img src="images/editFile.png" alt="edit"></div>
+                    </div>
+                    <div id="editing">
+                        Welcome to filemenager !
+                        Choose any option to get additional options.
+                    </div>
                 </div>
-
+                <span id="currentPath"> >  <span id="path"><%=userId%></span></span>
+                <div id="fileExpCont">
                 <div id="fileExplorer" name="fileExplorer">
 
                 </div>
+            </div>
             </div>
         </div>
     </div>
