@@ -9,6 +9,7 @@
 #fileExpCont{
     display: flex;
     justify-content: center;
+    height: 100%;
 }
 #fileMenager {
     width: 92%;
@@ -24,6 +25,8 @@
     display: flex;
     flex-wrap: wrap;
     justify-content: flex-start;
+    overflow-y: scroll;
+    height: 100%;
 }
 
 .element {
@@ -45,6 +48,7 @@
     width: fit-content;
     min-width: 55px;
     padding: 10px;
+    max-width: 80px;
 }
 
 .element div{
@@ -62,6 +66,8 @@ input {
     outline: none;
     border: 1px solid gray;
     border-radius: 6px;
+    padding: 5px;
+    font-size: 15px;
 }
 
 #options {
@@ -75,10 +81,13 @@ input {
 }
 
 #optionButtons{
-    flex: 2;
+    flex: 3;
     display: flex;
     flex-direction: row;
     justify-content: space-around;
+}
+#editing{
+    flex: 2;
 }
 
 #optionButtons img{
@@ -93,15 +102,23 @@ input {
     align-items: center;
     padding-left: 24px;
     padding-right: 24px;
+    font-size: 13px;
 }
 
 #options button {
-    background: linear-gradient(45deg, rgb(127, 10, 236), rgb(12, 47, 199));
-    border: 1px solid gray;
-    border-radius: 6px;
+    background-color: #ebebeb;
+    border: none;
+    border-radius: 3px ;
     color: gray;
-    font-size: 14px;
+    font-size: 15px;
     cursor: pointer;
+    min-height: 18px;
+    padding: 4px;
+}
+
+form div{
+    display: flex;
+    flex-direction: row;
 }
 
 #fileUpload {
@@ -109,9 +126,20 @@ input {
 }
 
 #fileUploadLabel {
-    background-color: #262626;
-    border-radius: 6px;
-    border: 1px solid gray;
+    background-color: #141414;
+    color: gray;
+    border-radius: 3px ;
     font-size: 15px;
-    padding: 3px;
+    min-height: 18px;
+    padding: 4px;
+    cursor: pointer;
+}
+
+#delForm{
+    display: flex;
+    flex-direction: column;
+}
+
+#delForm button{
+    max-width: 100px;
 }

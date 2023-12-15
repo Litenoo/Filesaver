@@ -57,8 +57,9 @@ FMrouter.put('/uploadFile', upload.single('fileUpload'), (req, res) => {
 
 });
 
-FMrouter.put('/deleteFile', upload.single('fileUpload'), (req, res) => { //make that
-
+FMrouter.put('/deleteFiles', (req, res) => {
+    console.log('server delete files req recived ! ')
+    console.log(req.body.delFiles);
 });
 
 FMrouter.post('/structure', async (req, res) => { //Change it to GET request
