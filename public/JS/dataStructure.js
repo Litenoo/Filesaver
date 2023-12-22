@@ -10,6 +10,7 @@ function setup() {
   const tiles = document.querySelectorAll('.element');
   tiles.forEach(tile =>{
     tile.addEventListener('click', ()=>{
+      console.log(tile);
       if(currentOption === 'delete'){
         if(!selected.includes(tile)){
           selected.push(tile);
@@ -72,7 +73,30 @@ options.forEach((element) => {
 
 document.querySelector('#reload').addEventListener('click', () => { loadFiles(); });
 
-async function deleteFiles() { // repair this
-  await fetch('/fileMenager/deleteFiles', { body: { delFiles: selected }, method: 'POST' }); // change method to delete
-  selected = [];
+async function deleteFiles() { //Refactorize
+  let filesRoutes = [];
+  for(i = 0; i<selected.length; i++ ){
+    filesRoutes.push(selected[i].querySelector('img').src);
+  }
+  console.log('SENDING:', filesRoutes);
+
+  try {
+    const response = await fetch('/fileMenager/deleteFiles', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ filesToDel: filesRoutes }),
+    });
+
+    // Handle the response as needed
+    if (response.ok) {
+      console.log('Files deleted successfully');
+      selected = [];
+    } else {
+      console.error('Failed to delete files');
+    }
+  } catch (error) {
+    console.error('Error:', error);
+  }
 }

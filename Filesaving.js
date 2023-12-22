@@ -9,6 +9,8 @@ const fs = require('fs');
 const bodyParser = require('body-parser');
 const path = require('path');
 
+FMrouter.use(express.json());
+
 function makeDirection(finalPath, folderName) {
   fs.mkdir(`${finalPath}/${folderName}`, (err) => {
     if (err) console.error('failed to create directory', err);
@@ -99,6 +101,20 @@ FMrouter.post('/structure', async (req, res) => { // Change it to GET request
 
 FMrouter.get('/getForm', async (req, res) => { // make json request here
   res.sendFile(path.join(__dirname, 'forms.json'));
+});
+
+FMrouter.post('/deleteFiles', (req,res)=>{
+  console.log(req.body.filesToDel);
+})
+
+FMrouter.post('/deleteFiles', (req, res) => {
+  const filesToDel = req.body.filesToDel;
+  console.log('Received files to delete:', filesToDel);
+
+  // Perform the file deletion logic here
+
+  // Send a response
+  res.status(200).send('Files deleted successfully');
 });
 
 // Functions
