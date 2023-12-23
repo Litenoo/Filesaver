@@ -103,18 +103,14 @@ FMrouter.get('/getForm', async (req, res) => { // make json request here
   res.sendFile(path.join(__dirname, 'forms.json'));
 });
 
-FMrouter.post('/deleteFiles', (req,res)=>{
-  console.log(req.body.filesToDel);
-})
-
 FMrouter.post('/deleteFiles', (req, res) => {
-  const filesToDel = req.body.filesToDel;
-  console.log('Received files to delete:', filesToDel);
-
-  // Perform the file deletion logic here
-
-  // Send a response
-  res.status(200).send('Files deleted successfully');
+  console.log(req.body.filesToDel);
+  req.body.filesToDel.forEach(fileDir => {
+    try {
+      console.log(path.join(__dirname, 'usersFiles', fileDir))
+      fs.rmSync(path.join(__dirname, 'public', 'usersFiles', fileDir), { recursive: true, force: true });
+    } catch (err) {
+      console.error(err);
+    }
+  });
 });
-
-// Functions

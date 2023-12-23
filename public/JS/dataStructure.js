@@ -1,26 +1,26 @@
 const display = document.querySelector('#fileExplorer');
-const userId = document.querySelector('#path').innerHTML;
+const userId = document.querySelector('#path').innerHTML; //change that
 const formDisplay = document.querySelector('#editing');
 const options = document.querySelectorAll('.option');
 
 let selected = [];
 let currentOption = '';
 
-function setup() {
+function setup() { // somfink dozynt łork łif selecting tiles
   const tiles = document.querySelectorAll('.element');
-  tiles.forEach(tile =>{
-    tile.addEventListener('click', ()=>{
+  tiles.forEach(tile => {
+    tile.addEventListener('click', () => {
       console.log(tile);
-      if(currentOption === 'delete'){
-        if(!selected.includes(tile)){
+      if (currentOption === 'delete') {
+        if (!selected.includes(tile)) {
           selected.push(tile);
-        }else{
-          selected.splice(selected.indexOf(tile),1);
+        } else {
+          selected.splice(selected.indexOf(tile), 1);
         }
         tiles.forEach(element => element.style.background = "#262626");
         selected.forEach(element => element.style.background = '#1255AD');
       }
-      if(currentOption === 'edit'){
+      if (currentOption === 'edit') {
         console.log('editor opens* ', tile);
       }
     });
@@ -75,28 +75,21 @@ document.querySelector('#reload').addEventListener('click', () => { loadFiles();
 
 async function deleteFiles() { //Refactorize
   let filesRoutes = [];
-  for(i = 0; i<selected.length; i++ ){
-    filesRoutes.push(selected[i].querySelector('img').src);
+  for (i = 0; i < selected.length; i++) {
+    let item = selected[i].querySelector('img').src.split('usersFiles')[1];
+    if(item === undefined){
+      item = `${userId}/${selected[i].querySelector('div').innerHTML}`; // It wont work when direction exploring system will be implemented.
+      // Instead of it get it from route variable.
+    }
+    filesRoutes.push(item);
   }
   console.log('SENDING:', filesRoutes);
 
-  try {
-    const response = await fetch('/fileMenager/deleteFiles', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ filesToDel: filesRoutes }),
-    });
-
-    // Handle the response as needed
-    if (response.ok) {
-      console.log('Files deleted successfully');
-      selected = [];
-    } else {
-      console.error('Failed to delete files');
-    }
-  } catch (error) {
-    console.error('Error:', error);
-  }
+  const response = await fetch('/fileMenager/deleteFiles', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ filesToDel: filesRoutes }),
+  });
 }
