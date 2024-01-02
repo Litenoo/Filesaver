@@ -7,10 +7,12 @@ let selected = [];
 function setup() {
   options.forEach((element) => {
     element.addEventListener('click', async () => {
+
       await btnC(element.id);
       if (element.id === 'delete') {
         delDisp = document.querySelector('#filesToDel');
       }
+
     });
   });
 }
@@ -26,14 +28,23 @@ async function btnC(option) {
   formDisplay.innerHTML = response[option];
 }
 
-async function loadFiles(path) {
-  // for future -- User can input "../<rest of path>"  in html and acces to server files.
+async function loadFiles(path) { // works but look at it :P
   let userId = await fetch('fileMenager/userId');
   userId = await userId.json();
   selected = [];
+  let route; // remake that
+  if(path){
+    route = '/' + path; //it works only for 1 depth explore
+  }
+  const response = await fetch('/fileMenager/structure', {
+     method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+       body: JSON.stringify({ direction: route }), //Remember about it ! Its needed to stringify body send to server.
+    });
+  let download = await response.json();
 
-  let route = await fetch('fileMenager/getRoute')
-  console.log(route);
+  let files = download.files;
+  let inner = '';
 
   function onFileSelect(file) {
     if (selected.includes(file)) {
@@ -45,11 +56,6 @@ async function loadFiles(path) {
       file.style.background = '#07B';
     }
   }
-  const response = await fetch('/fileMenager/structure', { method: 'POST', body: { path, direction : route } });
-  let download = await response.json();
-
-  files = download.files;
-  let inner = '';
 
   files.forEach((file) => {
     let displayIcon = `usersFiles/${userId}/${file}`;
@@ -70,13 +76,14 @@ async function loadFiles(path) {
     if (element.attributes.name.nodeValue === 'folder') {
       element.addEventListener('dblclick', () => {
         selected = [];
+        loadFiles(element.innerText);
         console.dir(element.innerText);
       });
     }
   });
 }
 
-loadFiles()
+loadFiles('')
   .then(() => { setup(); });
 
 document.querySelector('#reload').addEventListener('click', () => { // replace it with auto reload after action done
@@ -91,9 +98,9 @@ async function deleteFiles() {
     fetch('/fileMenager/deleteFiles', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ filesToDel : selected }),
+      body: JSON.stringify({ filesToDel: selected }),
     });
-  }else{
+  } else {
     console.log('There is no any files selected');
   }
 }

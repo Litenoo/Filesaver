@@ -88,11 +88,11 @@ FMrouter.put('/uploadFile', upload.single('fileUpload'), () => {
 });
 
 FMrouter.post('/structure', async (req, res) => { // Change it to GET request
-  console.log('The current session directory is : ', req.body.direction);
+  console.log(req.body.direction);
   if (!fs.existsSync(path.join(__dirname, 'public', 'usersFiles', `${session.user.id}`))) {
     makeDirection(path.join(__dirname, 'public', 'usersFiles'), `${session.user.id}`);
   }
-  res.json({ files: await readDir(req.body.path) });
+  res.json({ files: await readDir(req.body.direction) });
 });
 
 FMrouter.get('/getForm', async (req, res) => { // make json request here
@@ -113,18 +113,9 @@ FMrouter.post('/deleteFiles', (req) => {
   });
 });
 
-FMrouter.get('/getRoute', (req,res)=>{
-  try{
-    if(session.route === undefined){
-      session.route = path.join(__dirname, 'usersFiles', `${session.user.id}` );
-    }
-    res.send(session.route);
-  }catch(err){
-    console.log(err)
-  }
-})
 
-FMrouter.get('/userId', (req,res)=>{
+
+FMrouter.get('/userId', (req, res) => {
   res.send(`${session.user.id}`);
 });
 
