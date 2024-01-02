@@ -83,16 +83,12 @@ FMrouter.put('/newFolder', async (req, res) => {
   res.send('Folder created successfully');
 });
 
-FMrouter.put('/uploadFile', upload.single('fileUpload'), (req, res) => {
+FMrouter.put('/uploadFile', upload.single('fileUpload'), () => {
 
-});
-
-FMrouter.put('/deleteFiles', (req) => {
-  console.log('server delete files req recived ! ');
-  console.log(req.body.delFiles);
 });
 
 FMrouter.post('/structure', async (req, res) => { // Change it to GET request
+  console.log('The current session directory is : ', req.body.direction);
   if (!fs.existsSync(path.join(__dirname, 'public', 'usersFiles', `${session.user.id}`))) {
     makeDirection(path.join(__dirname, 'public', 'usersFiles'), `${session.user.id}`);
   }
@@ -103,14 +99,37 @@ FMrouter.get('/getForm', async (req, res) => { // make json request here
   res.sendFile(path.join(__dirname, 'forms.json'));
 });
 
-FMrouter.post('/deleteFiles', (req, res) => {
+FMrouter.post('/deleteFiles', (req) => {
+  // change to delete
   console.log(req.body.filesToDel);
-  req.body.filesToDel.forEach(fileDir => {
+  req.body.filesToDel.forEach((fileDir) => {
     try {
-      console.log(path.join(__dirname, 'usersFiles', fileDir))
-      fs.rmSync(path.join(__dirname, 'public', 'usersFiles', fileDir), { recursive: true, force: true });
+      // something causes error when user is not logged in
+      console.log(path.join(__dirname, 'public', 'usersFiles', `${session.user.id}`, fileDir));
+      fs.rmSync(path.join(__dirname, 'public', 'usersFiles', `${session.user.id}`, fileDir), { recursive: true, force: true });
     } catch (err) {
       console.error(err);
     }
   });
 });
+
+FMrouter.get('/getRoute', (req,res)=>{
+  try{
+    if(session.route === undefined){
+      session.route = path.join(__dirname, 'usersFiles', `${session.user.id}` );
+    }
+    res.send(session.route);
+  }catch(err){
+    console.log(err)
+  }
+})
+
+FMrouter.get('/userId', (req,res)=>{
+  res.send(`${session.user.id}`);
+});
+
+/**
+ * make changing routes and coming into folders possible
+ *  ensure that all functions works correct in directions;
+ *  make selected files selection display work correctly allways;
+ */
