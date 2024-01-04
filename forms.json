@@ -1,6 +1,6 @@
 {
-    "delete": "<div id='delForm' onclick='deleteFiles()'>Selected files :<span id='filesToDel'></span><button type=\"submit\">Delete</button></div>",
+    "delete": "<div id='delForm' onclick='deleteFiles()'>Selected files :<span id='filesToDel'></span><button class='submitBtn' type=\"submit\">Delete</button></div>",
     "edit": "Select file to edit it ",
-    "newFolder": " <form action=\"/fileMenager/newFolder?_method=PUT\" method=\"POST\" target=\"dummyFrame\"><input type=\"text\" name=\"folderName\" id=\"folderName\" placeholder=\"Folder name\"><button type=\"submit\">Add folder</button></form>",
-    "upload": "<form action=\"/fileMenager/uploadFile?_method=PUT\" method=\"POST\" target=\"dummyFrame\" enctype=\"multipart/form-data\"><input required type=\"text\" name=\"fileName\" id=\"fileName\" placeholder=\"Final file name\"><div></input><input type=\"file\" name=\"fileUpload\" id=\"fileUpload\"> </input><label for=\"fileUpload\" id=\"fileUploadLabel\">Select File</label><button type=\"submit\">Upload file</button></div></form>"
+    "newFolder": " <form action=\"/fileMenager/newFolder?_method=PUT\" method=\"POST\" target=\"dummyFrame\"><input type=\"text\" name=\"folderName\" id=\"folderName\" placeholder=\"Folder name\"><button class='submitBtn' type=\"submit\">Add folder</button></form>",
+    "upload": "<form action=\"/fileMenager/uploadFile?_method=PUT\" method=\"POST\" target=\"dummyFrame\" enctype=\"multipart/form-data\"><input required type=\"text\" name=\"fileName\" id=\"fileName\" placeholder=\"Final file name\"><div></input><input type=\"file\" name=\"fileUpload\" id=\"fileUpload\"> </input><label for=\"fileUpload\" id=\"fileUploadLabel\">Select File</label><button class='submitBtn' type=\"submit\">Upload file</button></div></form>"
 }

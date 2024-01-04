@@ -88,7 +88,7 @@ FMrouter.put('/uploadFile', upload.single('fileUpload'), () => {
 });
 
 FMrouter.post('/structure', async (req, res) => { // Change it to GET request
-  console.log(req.body.direction);
+  session.expPath = req.body.direction;
   if (!fs.existsSync(path.join(__dirname, 'public', 'usersFiles', `${session.user.id}`))) {
     makeDirection(path.join(__dirname, 'public', 'usersFiles'), `${session.user.id}`);
   }
@@ -101,7 +101,6 @@ FMrouter.get('/getForm', async (req, res) => { // make json request here
 
 FMrouter.post('/deleteFiles', (req) => {
   // change to delete
-  console.log(req.body.filesToDel);
   req.body.filesToDel.forEach((fileDir) => {
     try {
       // something causes error when user is not logged in
@@ -114,13 +113,13 @@ FMrouter.post('/deleteFiles', (req) => {
 });
 
 
-
-FMrouter.get('/userId', (req, res) => {
-  res.send(`${session.user.id}`);
+FMrouter.get('/userInfo', (req, res) => {
+  res.send({id : session.user.id, expPath : session.expPath});
+  res.end();
 });
 
 /**
- * make changing routes and coming into folders possible
+ * make changing routes and coming into folders possible;
  *  ensure that all functions works correct in directions;
- *  make selected files selection display work correctly allways;
+ *  make selected files selection display works correctly allways;
  */

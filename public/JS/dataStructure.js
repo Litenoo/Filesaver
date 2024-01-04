@@ -3,6 +3,7 @@ const formDisplay = document.querySelector('#editing');
 const options = document.querySelectorAll('.option');
 
 let selected = [];
+let route;
 
 function setup() {
   options.forEach((element) => {
@@ -12,7 +13,6 @@ function setup() {
       if (element.id === 'delete') {
         delDisp = document.querySelector('#filesToDel');
       }
-
     });
   });
 }
@@ -26,40 +26,58 @@ async function btnC(option) {
   response = await response.json();
   selected = [];
   formDisplay.innerHTML = response[option];
+
+  let submitBtn = document.querySelector('.submitBtn');
+  submitBtn.addEventListener('click', ()=>{
+    console.log(submitBtn);
+    setTimeout(()=>{ // check if there is no faster way to refresh that
+      loadFiles();
+    },300)
+  });
 }
 
-async function loadFiles(path) { // works but look at it :P
-  let userId = await fetch('fileMenager/userId');
-  userId = await userId.json();
-  selected = [];
-  let route; // remake that
+async function loadFiles(path) {
+  console.log('load files function started')
+  
+  //need to make direction doesnt change after refresh explorer
+
   if(path){
     route = '/' + path; //it works only for 1 depth explore
   }
   const response = await fetch('/fileMenager/structure', {
      method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-       body: JSON.stringify({ direction: route }), //Remember about it ! Its needed to stringify body send to server.
+       body: JSON.stringify({ direction: route }),
     });
+    
+    let userInfo = await fetch('fileMenager/userInfo');
+    userInfo = await userInfo.json();
+    selected = [];
+    if(userInfo.expPath === undefined){
+      userInfo.expPath = '';
+    }
+    console.log(userInfo)
+
   let download = await response.json();
 
   let files = download.files;
   let inner = '';
 
-  function onFileSelect(file) {
-    if (selected.includes(file)) {
-      let index = selected.indexOf(file);
+  function onFileSelect(tile) {
+    if (selected.includes(tile)) {
+      let index = selected.indexOf(tile);
       selected.splice(index, 1);
-      file.style.background = '#262626';
+      tile.style.background = '#262626';
     } else {
-      selected.push(file);
-      file.style.background = '#07B';
+      selected.push(tile);
+      tile.style.background = '#07B';
     }
   }
 
   files.forEach((file) => {
-    let displayIcon = `usersFiles/${userId}/${file}`;
+    let displayIcon = `usersFiles/${userInfo.id}/${userInfo.expPath}/${file}`;
     let cls = 'file';
+    console.log(displayIcon);
 
     if (file.split('.')[1] === undefined) {
       displayIcon = 'images/folder.png';
@@ -73,6 +91,7 @@ async function loadFiles(path) { // works but look at it :P
   const filesDisp = document.querySelectorAll('#fileExplorer .element');
   filesDisp.forEach(element => {
     element.addEventListener('click', () => { onFileSelect(element) });
+
     if (element.attributes.name.nodeValue === 'folder') {
       element.addEventListener('dblclick', () => {
         selected = [];
@@ -80,6 +99,7 @@ async function loadFiles(path) { // works but look at it :P
         console.dir(element.innerText);
       });
     }
+
   });
 }
 
