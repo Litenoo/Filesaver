@@ -22,6 +22,7 @@ async function readDir(path) {
     path = '';
   }
   try {
+    console.log('Reading files from : ', `./public/usersFiles/${session.user.id}${path}`)
     const files = await fsProm.readdir(`./public/usersFiles/${session.user.id}${path}`);
     return files;
   } catch (err) {
@@ -37,7 +38,6 @@ function isAuth(req, res, next) {
 }
 
 module.exports = FMrouter;
-
 // Setup
 
 app.use(bodyParser.json());
@@ -88,12 +88,23 @@ FMrouter.put('/uploadFile', upload.single('fileUpload'), () => {
 });
 
 FMrouter.post('/structure', async (req, res) => { // Change it to GET request
-  session.expPath = req.body.direction;
   if (!fs.existsSync(path.join(__dirname, 'public', 'usersFiles', `${session.user.id}`))) {
     makeDirection(path.join(__dirname, 'public', 'usersFiles'), `${session.user.id}`);
   }
-  res.json({ files: await readDir(req.body.direction) });
+  if (session.expPath === undefined || session.expPath === '') { //change it
+    res.json({ files: await readDir(session.expPath), route: `${session.user.id}/` });
+  }else{
+    res.json({ files: await readDir(session.expPath), route: `${session.user.id}/${session.expPath}` });
+  }
 });
+
+
+FMrouter.post('/pathChange', (req, res) => {
+  if (req.body.pathChange !== undefined) {
+    session.expPath += '/' + req.body.pathUpdt; //change to path.join; 
+  }
+  res.end();
+})
 
 FMrouter.get('/getForm', async (req, res) => { // make json request here
   res.sendFile(path.join(__dirname, 'forms.json'));
@@ -114,7 +125,7 @@ FMrouter.post('/deleteFiles', (req) => {
 
 
 FMrouter.get('/userInfo', (req, res) => {
-  res.send({id : session.user.id, expPath : session.expPath});
+  res.send({ id: session.user.id, expPath: session.expPath });
   res.end();
 });
 

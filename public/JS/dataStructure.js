@@ -28,54 +28,39 @@ async function btnC(option) {
   formDisplay.innerHTML = response[option];
 
   let submitBtn = document.querySelector('.submitBtn');
-  submitBtn.addEventListener('click', ()=>{
-    console.log(submitBtn);
-    setTimeout(()=>{ // check if there is no faster way to refresh that
+  submitBtn.addEventListener('click', () => {
+    setTimeout(() => { // check if there is no faster way to refresh that
       loadFiles();
-    },300)
+    }, 300)
   });
 }
 
-async function loadFiles(path) {
-  console.log('load files function started')
-  
-  //need to make direction doesnt change after refresh explorer
-
-  if(path){
-    route = '/' + path; //it works only for 1 depth explore
-  }
-  const response = await fetch('/fileMenager/structure', {
-     method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-       body: JSON.stringify({ direction: route }),
-    });
-    
-    let userInfo = await fetch('fileMenager/userInfo');
-    userInfo = await userInfo.json();
-    selected = [];
-    if(userInfo.expPath === undefined){
-      userInfo.expPath = '';
-    }
-    console.log(userInfo)
-
-  let download = await response.json();
-
-  let files = download.files;
+async function loadFiles(routeUpd) {
+  selected = [];
+  let displayIcon;
   let inner = '';
 
-  function onFileSelect(tile) {
-    if (selected.includes(tile)) {
-      let index = selected.indexOf(tile);
-      selected.splice(index, 1);
-      tile.style.background = '#262626';
-    } else {
-      selected.push(tile);
-      tile.style.background = '#07B';
-    }
-  }
+  console.log('route update : ' , routeUpd);
+  await fetch('/fileMenager/pathChange', { //send route actualisation
+    method: 'POST',
+    body: JSON.stringify({ pathUpdt: routeUpd}),
+    headers: { 'Content-Type': 'application/json' },
+  })
 
+  let response = await fetch('/fileMenager/structure', { //getting acctual position in directory
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ direction: route }),
+  });
+  
+  response = await response.json();
+
+  const files = response.files;
+  let resRoute = response.route;
+
+  //displaying and functions 
   files.forEach((file) => {
-    let displayIcon = `usersFiles/${userInfo.id}/${userInfo.expPath}/${file}`;
+      displayIcon = `usersFiles/${resRoute}/${file}`;
     let cls = 'file';
     console.log(displayIcon);
 
@@ -89,10 +74,11 @@ async function loadFiles(path) {
   display.innerHTML = inner;
 
   const filesDisp = document.querySelectorAll('#fileExplorer .element');
+
   filesDisp.forEach(element => {
     element.addEventListener('click', () => { onFileSelect(element) });
 
-    if (element.attributes.name.nodeValue === 'folder') {
+    if (element.attributes.name.nodeValue === 'folder') { // important. changes route
       element.addEventListener('dblclick', () => {
         selected = [];
         loadFiles(element.innerText);
@@ -101,9 +87,20 @@ async function loadFiles(path) {
     }
 
   });
+
+  function onFileSelect(tile) {
+    if (selected.includes(tile)) {
+      let index = selected.indexOf(tile);
+      selected.splice(index, 1);
+      tile.style.background = '#262626';
+    } else {
+      selected.push(tile);
+      tile.style.background = '#07B';
+    }
+  }
 }
 
-loadFiles('')
+loadFiles()
   .then(() => { setup(); });
 
 document.querySelector('#reload').addEventListener('click', () => { // replace it with auto reload after action done
