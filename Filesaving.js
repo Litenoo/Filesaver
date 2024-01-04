@@ -17,13 +17,9 @@ function makeDirection(finalPath, folderName) {
   });
 }
 
-async function readDir(path) {
-  if (path === undefined) {
-    path = '';
-  }
+async function readDir(folderPath) {
   try {
-    console.log('Reading files from : ', `./public/usersFiles/${session.user.id}${path}`)
-    const files = await fsProm.readdir(`./public/usersFiles/${session.user.id}${path}`);
+    const files = await fsProm.readdir(`./public/usersFiles/${session.user.id}${folderPath}`);
     return files;
   } catch (err) {
     console.error(err);
@@ -63,6 +59,7 @@ const storage = multer.diskStorage({
 });
 
 const upload = multer({ storage });
+session.expPath = '';
 
 // Routing
 
@@ -87,24 +84,23 @@ FMrouter.put('/uploadFile', upload.single('fileUpload'), () => {
 
 });
 
-FMrouter.post('/structure', async (req, res) => { // Change it to GET request
+FMrouter.post('/structure', async (req, res) => { // Change it to GET request or another
   if (!fs.existsSync(path.join(__dirname, 'public', 'usersFiles', `${session.user.id}`))) {
     makeDirection(path.join(__dirname, 'public', 'usersFiles'), `${session.user.id}`);
   }
-  if (session.expPath === undefined || session.expPath === '') { //change it
-    res.json({ files: await readDir(session.expPath), route: `${session.user.id}/` });
-  }else{
-    res.json({ files: await readDir(session.expPath), route: `${session.user.id}/${session.expPath}` });
+  if (session.expPath === undefined || session.expPath === '') { // change it
+    res.json({ files: await readDir(''), route: `${session.user.id}` });
+  } else {
+    res.json({ files: await readDir(session.expPath), route: `${session.user.id}${session.expPath}` });
   }
 });
 
-
 FMrouter.post('/pathChange', (req, res) => {
-  if (req.body.pathChange !== undefined) {
-    session.expPath += '/' + req.body.pathUpdt; //change to path.join; 
+  if (req.body.pathUpdt !== undefined) {
+    session.expPath = path.join(session.expPath, '/', req.body.pathUpdt);
   }
   res.end();
-})
+});
 
 FMrouter.get('/getForm', async (req, res) => { // make json request here
   res.sendFile(path.join(__dirname, 'forms.json'));
@@ -115,7 +111,6 @@ FMrouter.post('/deleteFiles', (req) => {
   req.body.filesToDel.forEach((fileDir) => {
     try {
       // something causes error when user is not logged in
-      console.log(path.join(__dirname, 'public', 'usersFiles', `${session.user.id}`, fileDir));
       fs.rmSync(path.join(__dirname, 'public', 'usersFiles', `${session.user.id}`, fileDir), { recursive: true, force: true });
     } catch (err) {
       console.error(err);
@@ -123,14 +118,18 @@ FMrouter.post('/deleteFiles', (req) => {
   });
 });
 
-
-FMrouter.get('/userInfo', (req, res) => {
-  res.send({ id: session.user.id, expPath: session.expPath });
-  res.end();
-});
-
 /**
- * make changing routes and coming into folders possible;
+ *  ERROR when login as another user, then select folder and
+ * login as another user the route to folder will be the same on both accounts;
+ * 
+ * Repair the error which causes its impossible to add files in folders
+ *  Probably caused by changed route system;
+ * 
  *  ensure that all functions works correct in directions;
+ * 
  *  make selected files selection display works correctly allways;
+ * 
+ *  add option of clicking route fragments in explorer to expolre them back and arrow back to go ..;
+ * 
+ *  make option of editing file by dblclicking it;
  */

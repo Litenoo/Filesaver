@@ -5,62 +5,42 @@ const options = document.querySelectorAll('.option');
 let selected = [];
 let route;
 
-function setup() {
-  options.forEach((element) => {
-    element.addEventListener('click', async () => {
-
-      await btnC(element.id);
-      if (element.id === 'delete') {
-        delDisp = document.querySelector('#filesToDel');
-      }
-    });
-  });
-}
-
-function showEditor() {
-
-}
-
-async function btnC(option) {
-  let response = await fetch('/fileMenager/getForm');
-  response = await response.json();
-  selected = [];
-  formDisplay.innerHTML = response[option];
-
-  let submitBtn = document.querySelector('.submitBtn');
-  submitBtn.addEventListener('click', () => {
-    setTimeout(() => { // check if there is no faster way to refresh that
-      loadFiles();
-    }, 300)
-  });
-}
-
 async function loadFiles(routeUpd) {
   selected = [];
   let displayIcon;
   let inner = '';
 
-  console.log('route update : ' , routeUpd);
+  function onFileSelect(tile) {
+    if (selected.includes(tile)) {
+      const index = selected.indexOf(tile);
+      selected.splice(index, 1);
+      tile.style.background = '#262626';
+    } else {
+      selected.push(tile);
+      tile.style.background = '#07B';
+    }
+  }
+
+  console.log('route update : ', routeUpd);
   await fetch('/fileMenager/pathChange', { //send route actualisation
     method: 'POST',
-    body: JSON.stringify({ pathUpdt: routeUpd}),
+    body: JSON.stringify({ pathUpdt: routeUpd }),
     headers: { 'Content-Type': 'application/json' },
-  })
+  });
 
   let response = await fetch('/fileMenager/structure', { //getting acctual position in directory
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ direction: route }),
   });
-  
+
   response = await response.json();
 
   const files = response.files;
-  let resRoute = response.route;
+  const resRoute = response.route;
 
-  //displaying and functions 
   files.forEach((file) => {
-      displayIcon = `usersFiles/${resRoute}/${file}`;
+    displayIcon = `usersFiles/${resRoute}/${file}`;
     let cls = 'file';
     console.log(displayIcon);
 
@@ -75,7 +55,7 @@ async function loadFiles(routeUpd) {
 
   const filesDisp = document.querySelectorAll('#fileExplorer .element');
 
-  filesDisp.forEach(element => {
+  filesDisp.forEach((element) => {
     element.addEventListener('click', () => { onFileSelect(element) });
 
     if (element.attributes.name.nodeValue === 'folder') { // important. changes route
@@ -85,19 +65,33 @@ async function loadFiles(routeUpd) {
         console.dir(element.innerText);
       });
     }
-
   });
 
-  function onFileSelect(tile) {
-    if (selected.includes(tile)) {
-      let index = selected.indexOf(tile);
-      selected.splice(index, 1);
-      tile.style.background = '#262626';
-    } else {
-      selected.push(tile);
-      tile.style.background = '#07B';
-    }
+  function showEditor() {
+
   }
+}
+
+async function btnC(option) {
+  let response = await fetch('/fileMenager/getForm');
+  response = await response.json();
+  selected = [];
+  formDisplay.innerHTML = response[option];
+
+  let submitBtn = document.querySelector('.submitBtn');
+  submitBtn.addEventListener('click', () => {
+    setTimeout(() => { // check if there is no faster way to refresh that
+      loadFiles();
+    }, 300);
+  });
+}
+
+function setup() {
+  options.forEach((element) => {
+    element.addEventListener('click', async () => {
+      await btnC(element.id);
+    });
+  });
 }
 
 loadFiles()
@@ -120,4 +114,4 @@ async function deleteFiles() {
   } else {
     console.log('There is no any files selected');
   }
-}
+};
