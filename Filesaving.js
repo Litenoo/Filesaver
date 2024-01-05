@@ -50,7 +50,7 @@ const storage = multer.diskStorage({
     if (!fs.existsSync(path.join(__dirname, 'public', 'usersFiles', `${session.user.id}`))) {
       makeDirection(path.join(__dirname, 'public', 'usersFiles'), `${session.user.id}`);
     }
-    cb(null, path.join(__dirname, 'public', 'usersFiles', `${session.user.id}`));
+    cb(null, path.join(__dirname, 'public', 'usersFiles', `${session.user.id}`, session.user.expPath)); //edit
   },
   filename: (req, file, cb) => {
     const filePath = req.body.fileName + path.extname(file.originalname);
@@ -59,7 +59,6 @@ const storage = multer.diskStorage({
 });
 
 const upload = multer({ storage });
-session.expPath = '';
 
 // Routing
 
@@ -68,11 +67,12 @@ FMrouter.get('/', isAuth, (req, res) => {
     name: session.user.username,
     imgRef: session.imgRef,
     userId: session.user.id,
+    explorePath: session.user.expPath,
   });
 });
 
 FMrouter.put('/newFolder', async (req, res) => {
-  const pathF = path.join(__dirname, 'public', 'usersFiles', `${session.user.id}`);
+  const pathF = path.join(__dirname, 'public', 'usersFiles', `${session.user.id}`, session.user.expPath);
   if (!fs.existsSync(path.join(__dirname, 'public', 'usersFiles', `${session.user.id}`))) {
     makeDirection(path.join(__dirname, 'public', 'usersFiles'), `${session.user.id}`);
   }
@@ -85,19 +85,27 @@ FMrouter.put('/uploadFile', upload.single('fileUpload'), () => {
 });
 
 FMrouter.post('/structure', async (req, res) => { // Change it to GET request or another
+  if(session.user.expPath === undefined){session.user.expPath = ''};
+  console.log(session.user.id , session.user.expPath);
   if (!fs.existsSync(path.join(__dirname, 'public', 'usersFiles', `${session.user.id}`))) {
     makeDirection(path.join(__dirname, 'public', 'usersFiles'), `${session.user.id}`);
   }
-  if (session.expPath === undefined || session.expPath === '') { // change it
+  if (session.user.expPath === undefined || session.user.expPath === '') { // change it
     res.json({ files: await readDir(''), route: `${session.user.id}` });
   } else {
-    res.json({ files: await readDir(session.expPath), route: `${session.user.id}${session.expPath}` });
+    res.json({ files: await readDir(session.user.expPath), route: `${session.user.id}${session.user.expPath}` });
   }
 });
 
 FMrouter.post('/pathChange', (req, res) => {
+  console.log('path change called')
   if (req.body.pathUpdt !== undefined) {
-    session.expPath = path.join(session.expPath, '/', req.body.pathUpdt);
+    if(req.body.pathUpdt === '..'){
+      console.log(`${(session.user.expPath)} back`);
+    }else{
+      session.user.expPath = path.join(session.user.expPath, '/', req.body.pathUpdt);
+    }
+
   }
   res.end();
 });
@@ -108,10 +116,11 @@ FMrouter.get('/getForm', async (req, res) => { // make json request here
 
 FMrouter.post('/deleteFiles', (req) => {
   // change to delete
-  req.body.filesToDel.forEach((fileDir) => {
+  req.body.filesToDel.forEach((fileName) => {
     try {
       // something causes error when user is not logged in
-      fs.rmSync(path.join(__dirname, 'public', 'usersFiles', `${session.user.id}`, fileDir), { recursive: true, force: true });
+      console.log(fileName)
+      fs.rmSync(path.join(__dirname, 'public', 'usersFiles', `${session.user.id}`,session.user.expPath, fileName), { recursive: true, force: true });
     } catch (err) {
       console.error(err);
     }
@@ -119,15 +128,9 @@ FMrouter.post('/deleteFiles', (req) => {
 });
 
 /**
- *  ERROR when login as another user, then select folder and
- * login as another user the route to folder will be the same on both accounts;
- * 
- * Repair the error which causes its impossible to add files in folders
- *  Probably caused by changed route system;
- * 
- *  ensure that all functions works correct in directions;
  * 
  *  make selected files selection display works correctly allways;
+ * (especially when change dir with selected option)
  * 
  *  add option of clicking route fragments in explorer to expolre them back and arrow back to go ..;
  * 

@@ -1,12 +1,16 @@
 const display = document.querySelector('#fileExplorer');
 const formDisplay = document.querySelector('#editing');
 const options = document.querySelectorAll('.option');
+const routeDisp = document.querySelector('#path');
 
 let selected = [];
 let route;
 
 async function loadFiles(routeUpd) {
+  // The function is too long and should be refactorised
+  // + some of theese things should be another function
   selected = [];
+  const retrn = document.querySelector('#back');
   let displayIcon;
   let inner = '';
 
@@ -20,6 +24,15 @@ async function loadFiles(routeUpd) {
       tile.style.background = '#07B';
     }
   }
+
+  retrn.addEventListener('click', ()=>{
+    console.log('GOING BACK GOING BACK GOING BACK GOING BACK GOING BACK ')
+    fetch('/fileMenager/pathChange', {
+      method: 'POST',
+      body: JSON.stringify({ pathUpdt: '..' }),
+      headers: { 'Content-Type': 'application/json' },
+    });
+  })
 
   console.log('route update : ', routeUpd);
   await fetch('/fileMenager/pathChange', { //send route actualisation
@@ -38,6 +51,8 @@ async function loadFiles(routeUpd) {
 
   const files = response.files;
   const resRoute = response.route;
+
+  
 
   files.forEach((file) => {
     displayIcon = `usersFiles/${resRoute}/${file}`;
@@ -115,3 +130,5 @@ async function deleteFiles() {
     console.log('There is no any files selected');
   }
 };
+
+//make users id doenst show on fileexporer route
