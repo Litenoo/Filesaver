@@ -67,7 +67,6 @@ FMrouter.get('/', isAuth, (req, res) => {
     name: session.user.username,
     imgRef: session.imgRef,
     userId: session.user.id,
-    explorePath: session.user.expPath,
   });
 });
 
@@ -98,14 +97,13 @@ FMrouter.post('/structure', async (req, res) => { // Change it to GET request or
 });
 
 FMrouter.post('/pathChange', (req, res) => {
-  console.log('path change called')
   if (req.body.pathUpdt !== undefined) {
     if(req.body.pathUpdt === '..'){
-      console.log(`${(session.user.expPath)} back`);
+      session.user.expPath = path.join(session.user.expPath, '/..');
     }else{
       session.user.expPath = path.join(session.user.expPath, '/', req.body.pathUpdt);
     }
-
+    console.log('path change called the new path is : ' , session.user.expPath)
   }
   res.end();
 });
@@ -132,7 +130,7 @@ FMrouter.post('/deleteFiles', (req) => {
  *  make selected files selection display works correctly allways;
  * (especially when change dir with selected option)
  * 
- *  add option of clicking route fragments in explorer to expolre them back and arrow back to go ..;
+ *  add option of clicking route fragments in explorer to expolre them back ;
  * 
  *  make option of editing file by dblclicking it;
  */

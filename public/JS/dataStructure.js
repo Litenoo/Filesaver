@@ -2,17 +2,45 @@ const display = document.querySelector('#fileExplorer');
 const formDisplay = document.querySelector('#editing');
 const options = document.querySelectorAll('.option');
 const routeDisp = document.querySelector('#path');
+const backBtn = document.querySelector('#back');
+
+
 
 let selected = [];
 let route;
 
 async function loadFiles(routeUpd) {
-  // The function is too long and should be refactorised
-  // + some of theese things should be another function
-  selected = [];
-  const retrn = document.querySelector('#back');
-  let displayIcon;
-  let inner = '';
+
+  function displayTiles(files, route) {
+
+    selected = [];
+    let displayIcon;
+    let inner = '';
+
+    files.forEach((file) => {
+      displayIcon = `usersFiles/${route}/${file}`;
+      let cls = 'file';
+
+      if (file.split('.')[1] === undefined) {
+        displayIcon = 'images/folder.png';
+        cls = 'folder';
+      }
+      inner += `<div name="${cls}" class="element"><img src="${displayIcon}"></img><div>${file}</div></div>`;
+    });
+
+    display.innerHTML = inner;
+
+    const filesDisp = document.querySelectorAll('#fileExplorer .element');
+
+    filesDisp.forEach((element) => {
+      element.addEventListener('click', () => { onFileSelect(element) });
+      if (element.attributes.name.nodeValue === 'folder') {
+        element.addEventListener('dblclick', () => {loadFiles(element.innerText)});
+      }
+    });
+
+    routeDisp.innerHTML = route;
+  }
 
   function onFileSelect(tile) {
     if (selected.includes(tile)) {
@@ -25,79 +53,38 @@ async function loadFiles(routeUpd) {
     }
   }
 
-  retrn.addEventListener('click', ()=>{
-    console.log('GOING BACK GOING BACK GOING BACK GOING BACK GOING BACK ')
-    fetch('/fileMenager/pathChange', {
-      method: 'POST',
-      body: JSON.stringify({ pathUpdt: '..' }),
-      headers: { 'Content-Type': 'application/json' },
-    });
-  })
-
-  console.log('route update : ', routeUpd);
-  await fetch('/fileMenager/pathChange', { //send route actualisation
+  await fetch('/fileMenager/pathChange', {
     method: 'POST',
     body: JSON.stringify({ pathUpdt: routeUpd }),
     headers: { 'Content-Type': 'application/json' },
   });
 
-  let response = await fetch('/fileMenager/structure', { //getting acctual position in directory
+  let response = await fetch('/fileMenager/structure', { 
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ direction: route }),
   });
 
   response = await response.json();
+  displayTiles(response.files, response.route);
+}
 
-  const files = response.files;
-  const resRoute = response.route;
+function showEditor() {
 
-  
-
-  files.forEach((file) => {
-    displayIcon = `usersFiles/${resRoute}/${file}`;
-    let cls = 'file';
-    console.log(displayIcon);
-
-    if (file.split('.')[1] === undefined) {
-      displayIcon = 'images/folder.png';
-      cls = 'folder';
-    }
-    inner += `<div name="${cls}" class="element"><img src="${displayIcon}"></img><div>${file}</div></div>`;
-  });
-
-  display.innerHTML = inner;
-
-  const filesDisp = document.querySelectorAll('#fileExplorer .element');
-
-  filesDisp.forEach((element) => {
-    element.addEventListener('click', () => { onFileSelect(element) });
-
-    if (element.attributes.name.nodeValue === 'folder') { // important. changes route
-      element.addEventListener('dblclick', () => {
-        selected = [];
-        loadFiles(element.innerText);
-        console.dir(element.innerText);
-      });
-    }
-  });
-
-  function showEditor() {
-
-  }
 }
 
 async function btnC(option) {
+  selected = [];
   let response = await fetch('/fileMenager/getForm');
   response = await response.json();
-  selected = [];
+
   formDisplay.innerHTML = response[option];
 
   let submitBtn = document.querySelector('.submitBtn');
   submitBtn.addEventListener('click', () => {
-    setTimeout(() => { // check if there is no faster way to refresh that
+    setTimeout(()=>{
       loadFiles();
-    }, 300);
+    },100)
   });
 }
 
@@ -130,5 +117,16 @@ async function deleteFiles() {
     console.log('There is no any files selected');
   }
 };
+
+
+  backBtn.addEventListener('click', () => {
+    console.log('GOING BACK GOING BACK GOING BACK GOING BACK GOING BACK ');
+    fetch('/fileMenager/pathChange', {
+      method: 'POST',
+      body: JSON.stringify({ pathUpdt: '..' }),
+      headers: { 'Content-Type': 'application/json' },
+    });
+    loadFiles();
+  });
 
 //make users id doenst show on fileexporer route
