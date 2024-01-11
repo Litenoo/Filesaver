@@ -3,6 +3,8 @@ const formDisplay = document.querySelector('#editing');
 const options = document.querySelectorAll('.option');
 const routeDisp = document.querySelector('#path');
 const backBtn = document.querySelector('#back');
+const fileDisp = document.querySelector('#fileDisplay');
+const closeBtn = document.querySelector('#closeBtn');
 
 
 
@@ -34,8 +36,11 @@ async function loadFiles(routeUpd) {
 
     filesDisp.forEach((element) => {
       element.addEventListener('click', () => { onFileSelect(element) });
-      if (element.attributes.name.nodeValue === 'folder') {
-        element.addEventListener('dblclick', () => {loadFiles(element.innerText)});
+      switch (element.attributes.name.nodeValue) {
+        case 'folder': element.addEventListener('dblclick', () => { loadFiles(element.innerText) });
+          break;
+        case 'file': element.addEventListener('dblclick', () => { showFile(element.innerText, element) });
+        break;
       }
     });
 
@@ -59,7 +64,7 @@ async function loadFiles(routeUpd) {
     headers: { 'Content-Type': 'application/json' },
   });
 
-  let response = await fetch('/fileMenager/structure', { 
+  let response = await fetch('/fileMenager/structure', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ direction: route }),
@@ -69,12 +74,30 @@ async function loadFiles(routeUpd) {
   displayTiles(response.files, response.route);
 }
 
-function showEditor() {
-
+async function showFile(FName, element) {
+  let ext = FName.split('.')[1];
+  console.log(ext)
+  if(['txt','js','cpp','c','py','json'].includes(ext)){
+  let response = await fetch('/fileMenager/getFile', {
+    method : 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({fileName : FName}),
+  });
+  response = await response.text();
+  console.log(response);
+  fileDisp.innerHTML = response;
+  fileDisp.style.display = 'flex';
+  }else if(['jpg','img','jpeg','webp','vaw','png','svg','gif']){
+    console.dir(element.querySelector('img').attributes.src.nodeValue)
+    fileDisp.innerHTML = `File : <img src='${element.querySelector('img').attributes.src.nodeValue}' class="displayImg"></img>`;
+    fileDisp.style.display = 'flex';
+  }else{
+    fileDisp.innerHTML = `Files with ${ext} extension are not supported`;
+    fileDisp.style.display = 'flex';
+  }
 }
 
 async function btnC(option) {
-  selected = [];
   let response = await fetch('/fileMenager/getForm');
   response = await response.json();
 
@@ -82,9 +105,9 @@ async function btnC(option) {
 
   let submitBtn = document.querySelector('.submitBtn');
   submitBtn.addEventListener('click', () => {
-    setTimeout(()=>{
+    setTimeout(() => {
       loadFiles();
-    },100)
+    }, 100)
   });
 }
 
@@ -103,7 +126,7 @@ document.querySelector('#reload').addEventListener('click', () => { // replace i
   loadFiles();
 });
 
-async function deleteFiles() {
+async function deleteFiles() { // IMP. DELETE button from text over the button to delete items
   if (selected != null) {
     selected.forEach((element, index) => {
       selected[index] = element.outerText;
@@ -119,14 +142,15 @@ async function deleteFiles() {
 };
 
 
-  backBtn.addEventListener('click', () => {
-    console.log('GOING BACK GOING BACK GOING BACK GOING BACK GOING BACK ');
-    fetch('/fileMenager/pathChange', {
-      method: 'POST',
-      body: JSON.stringify({ pathUpdt: '..' }),
-      headers: { 'Content-Type': 'application/json' },
-    });
-    loadFiles();
+backBtn.addEventListener('click', () => {
+  console.log('GOING BACK GOING BACK GOING BACK GOING BACK GOING BACK ');
+  fetch('/fileMenager/pathChange', {
+    method: 'POST',
+    body: JSON.stringify({ pathUpdt: '..' }),
+    headers: { 'Content-Type': 'application/json' },
   });
+  loadFiles();
+});
 
 //make users id doenst show on fileexporer route
+//add close window option on showing file

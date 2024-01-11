@@ -143,3 +143,22 @@ form div{
 #delForm button{
     max-width: 100px;
 }
+
+#fileDisplay{
+    background-color: #262626;
+    border: 2px solid gray;
+    color: white;
+    position: fixed;
+    margin: auto;
+    min-width: 80%;
+    min-height: 80%;
+    display: none;
+}
+
+#closeBtn{
+    background-color: red;
+}
+
+.displayImg{
+    min-height: 400px;
+}
