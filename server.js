@@ -126,6 +126,7 @@ app.put('/profileUpload', upload.single('avatar'), async (req, res) => {
       db.run('UPDATE profPics SET pic_reference = ? WHERE user_id = ?', [filename, session.user.id], (err) => {
         if (err) { console.error(err); }
       });
+      session.imgRef = `images/userProfiles/${filename}`;
       res.redirect('/');
     } catch (err) {
       console.error('Error on fileUpload');
