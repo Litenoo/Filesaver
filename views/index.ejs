@@ -1,31 +1,43 @@
-<link rel="stylesheet" type="text/css" href="css/homePage.css">
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" type="text/css" href="css/homePage.css">    
+</head>
+<body>
 
-<div id="container">
+    <div id="container">
 
-    <div id="topBar">
-        <div id="topProfile">
-            <a href="/profile">
-                <img src='<%=imgRef%>' alt="" id="ProfilePic">
-            </a>
-            <div id="profData">
-                <span id="userName">
-                    <%= name%>
-                </span>
+        <div id="topBar">
+            <div id="topProfile">
+                <a href="/profile">
+                    <img src='<%=imgRef%>' alt="" id="ProfilePic">
+                </a>
+                <div id="profData">
+                    <span id="userName">
+                        <%= name%>
+                    </span>
+                </div>
+            </div>
+            <div id="topOptions">
+                <form action="/fileMenager" method="GET">
+                    <button type="submit">Your files</button>
+                </form>
+                <form action="/logout?_method=DELETE" method="POST">
+                    <button type="submit">Logout</button>
+                </form>
             </div>
         </div>
-        <div id="topOptions">
-            <form action="/fileMenager" method="GET">
-                <button type="submit">Your files</button>
-            </form>
-            <form action="/logout?_method=DELETE" method="POST">
-                <button type="submit">Logout</button>
-            </form>
+    
+        <div id="mainContent">
+            <span>Welcome back <%= name%></span>
         </div>
+
+        UWAGA!!! Aplikacja jest stworzona w celach edukacyjnych. WSZYSTKIE PLIKI ORAZ DANE PRZECHOWYWANE PRZEZ UŻYTKOWNIKÓW STAJĄ SIĘ MOJĄ WŁASNOŚCIĄ. Wszelkie prawa zastrzeżone ©. 
+    
+    
     </div>
-
-    <div id="mainContent">
-        <span>Welcome back <%= name%></span>
-    </div>
-
-
-</div>
+</body>
+</html>

@@ -21,22 +21,21 @@ app.use(session({
   resave: false,
   saveUninitialized: false,
 }));
+app.use('/fileMenager', FMRouter);
 
 function isAuth(req, res, next) {
   if (!session.user) {
     return res.redirect('/login');
   }
-  next();
+  return next();
 }
 
 function isNotAuth(req, res, next) {
   if (session.user) {
     return res.redirect('/');
   }
-  next();
+  return next();
 }
-
-app.use('/fileMenager', FMRouter);
 
 const db = new sqlite3.Database('./serverdb.db', sqlite3.OPEN_READWRITE, (err) => {
   if (err) { console.error(err); } else {
@@ -66,7 +65,7 @@ app.get('/', isAuth, async (req, res) => {
 });
 
 app.get('/register', isNotAuth, (req, res) => {
-  res.render('register.ejs', { errorMsg: '' }); // Decide which error message system is better and standarize it
+  res.render('register.ejs', { errorMsg: '' });
 });
 
 app.get('/login', isNotAuth, async (req, res) => {
@@ -89,7 +88,6 @@ app.post('/register', async (req, res) => {
     req.body.email,
     req.body.username,
   );
-  console.log(output);
   if (output !== undefined) {
     res.render('register.ejs', { errorMsg: output.err });
   } else {
@@ -106,7 +104,6 @@ app.post('/login', async (req, res) => {
       'userProfiles',
       await getProfPic(session.user.id),
     );
-
     res.redirect('/');
   } else {
     session.message = response.message;
@@ -118,7 +115,6 @@ app.delete('/logout', (req, res) => {
   req.session.destroy((err) => {
     if (err) console.error(err);
   });
-
   session.user = null;
   res.redirect('/login');
 });
@@ -127,7 +123,6 @@ app.put('/profileUpload', upload.single('avatar'), async (req, res) => {
   if (req.file) {
     try {
       const { filename } = req.file;
-      console.log(req.file);
       db.run('UPDATE profPics SET pic_reference = ? WHERE user_id = ?', [filename, session.user.id], (err) => {
         if (err) { console.error(err); }
       });

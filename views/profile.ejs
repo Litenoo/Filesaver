@@ -1,21 +1,32 @@
-<link rel="stylesheet" type="text/css" href="css/profile.css">
-
-<div id="container">
-    <div id="mainContent">
-        <div id="profileTab">
-            <div id="mainInfo">
-                <img src="<%=imgRef%>" alt="ProfilePicture" width="100px" height="100px" id="profPic">
-                <span id="username">
-                    <%=name%>
-                </span>
-            </div>
-            <div id="options">
-                <form action="/profileUpload?_method=PUT" method="POST" enctype="multipart/form-data">
-                    <input type="file" name="avatar">Select profile picture</input>
-                    <button type="submit">Upload Profile picture</button>
-                </form>
-                <form action="/logout?_method=DELETE" method="POST"><button type="submit">Log out</button></form>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" type="text/css" href="css/profile.css">
+</head>
+<body>
+    <div id="container">
+        <div id="mainContent">
+            <div id="profileTab">
+                <div id="mainInfo">
+                    <img src="<%=imgRef%>" alt="ProfilePicture" width="100px" height="100px" id="profPic">
+                    <span id="username">
+                        <%=name%>
+                    </span>
+                </div>
+                <div id="options">
+                    <form action="/profileUpload?_method=PUT" method="POST" enctype="multipart/form-data">
+                        <input type="file" name="avatar">Select profile picture</input>
+                        <button type="submit">Upload Profile picture</button>
+                    </form>
+                    <form action="/logout?_method=DELETE" method="POST"><button type="submit">Log out</button></form>
+                </div>
             </div>
         </div>
     </div>
-</div>
+
+    UWAGA!!! Aplikacja jest stworzona w celach edukacyjnych. WSZYSTKIE PLIKI ORAZ DANE PRZECHOWYWANE PRZEZ UŻYTKOWNIKÓW STAJĄ SIĘ MOJĄ WŁASNOŚCIĄ. Wszystkie prawa zastrzeżone ©.
+</body>
+</html>
