@@ -19,22 +19,15 @@ app.use(express.static(`${__dirname}/public`));
 app.use(session({
   secret: process.env.SESSION_SECRET,
   resave: false,
-  saveUninitialized: false,
+  saveUninitialized: true,
 }));
 app.use('/fileMenager', FMRouter);
 
-function isAuth(req, res, next) {
-  if (!session.user) {
-    return res.redirect('/login');
+async function isAuth(req) {
+  if (req.session.user) {
+    return true;
   }
-  return next();
-}
-
-function isNotAuth(req, res, next) {
-  if (session.user) {
-    return res.redirect('/');
-  }
-  return next();
+  return false;
 }
 
 const db = new sqlite3.Database('./serverdb.db', sqlite3.OPEN_READWRITE, (err) => {
@@ -49,7 +42,7 @@ const storage = multer.diskStorage({
     cb(null, path.join(__dirname, 'public', 'images', 'userProfiles'));
   },
   filename(req, file, cb) {
-    const userId = session.user.id;
+    const userId = req.session.user.id;
     const filename = `${userId}.jpg`;
     cb(null, filename);
   },
@@ -57,29 +50,41 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage });
 
-app.get('/', isAuth, async (req, res) => {
-  res.render('index.ejs', {
-    name: session.user.username,
-    imgRef: session.imgRef,
-  });
+app.get('/', async (req, res, next) => {
+  if (await isAuth(req, res, next)) {
+    res.render('index.ejs', {
+      name: req.session.user.username,
+      imgRef: req.session.imgRef,
+    });
+  } else {
+    res.redirect('/login');
+  }
 });
 
-app.get('/register', isNotAuth, (req, res) => {
+app.get('/register', (req, res) => {
   res.render('register.ejs', { errorMsg: '' });
 });
 
-app.get('/login', isNotAuth, async (req, res) => {
-  res.render('login.ejs', {
-    message: session.message,
-  });
-  session.message = null;
+app.get('/login', async (req, res, next) => {
+  if (!await isAuth(req)) {
+    res.render('login.ejs', {
+      message: req.session.message,
+    });
+    req.session.message = null;
+  } else {
+    res.redirect('/');
+  }
 });
 
-app.get('/profile', isAuth, async (req, res) => {
-  res.render('profile.ejs', {
-    name: session.user.username,
-    imgRef: session.imgRef,
-  });
+app.get('/profile', async (req, res) => {
+  if (await isAuth(req)) {
+    res.render('profile.ejs', {
+      name: req.session.user.username,
+      imgRef: req.session.imgRef,
+    });
+  } else {
+    res.redirect('/login')
+  }
 });
 
 app.post('/register', async (req, res) => {
@@ -98,15 +103,15 @@ app.post('/register', async (req, res) => {
 app.post('/login', async (req, res) => {
   const response = await auth(req.body.email, req.body.password);
   if (response.user) {
-    session.user = response.user;
-    session.imgRef = path.join(
+    req.session.user = response.user;
+    req.session.imgRef = path.join(
       'images',
       'userProfiles',
-      await getProfPic(session.user.id),
+      await getProfPic(req.session.user.id),
     );
     res.redirect('/');
   } else {
-    session.message = response.message;
+    req.session.message = response.message;
     res.redirect('/login');
   }
 });
@@ -115,7 +120,6 @@ app.delete('/logout', (req, res) => {
   req.session.destroy((err) => {
     if (err) console.error(err);
   });
-  session.user = null;
   res.redirect('/login');
 });
 
@@ -123,10 +127,10 @@ app.put('/profileUpload', upload.single('avatar'), async (req, res) => {
   if (req.file) {
     try {
       const { filename } = req.file;
-      db.run('UPDATE profPics SET pic_reference = ? WHERE user_id = ?', [filename, session.user.id], (err) => {
+      db.run('UPDATE profPics SET pic_reference = ? WHERE user_id = ?', [filename, req.session.user.id], (err) => {
         if (err) { console.error(err); }
       });
-      session.imgRef = `images/userProfiles/${filename}`;
+      req.session.imgRef = `images/userProfiles/${filename}`;
       res.redirect('/');
     } catch (err) {
       console.error('Error on fileUpload');

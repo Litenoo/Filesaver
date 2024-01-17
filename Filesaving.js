@@ -16,9 +16,9 @@ function makeDirection(finalPath, folderName) {
   });
 }
 
-async function readDir(folderPath) {
+async function readDir(folderPath, sess) {
   try {
-    const files = await fsProm.readdir(`./public/usersFiles/${session.user.id}${folderPath}`);
+    const files = await fsProm.readdir(`./public/usersFiles/${sess}${folderPath}`); //cant do req.session which is needed
     return files;
   } catch (err) {
     console.error(err);
@@ -26,7 +26,7 @@ async function readDir(folderPath) {
 }
 
 function isAuth(req, res, next) {
-  if (!session.user) {
+  if (!req.session.user) {
     return res.redirect('/login');
   }
   next();
@@ -46,10 +46,10 @@ FMrouter.use(session({
 
 const storage = multer.diskStorage({
   destination: function async(req, file, cb) {
-    if (!fs.existsSync(path.join(__dirname, 'public', 'usersFiles', `${session.user.id}`))) {
-      makeDirection(path.join(__dirname, 'public', 'usersFiles'), `${session.user.id}`);
+    if (!fs.existsSync(path.join(__dirname, 'public', 'usersFiles', `${req.session.user.id}`))) {
+      makeDirection(path.join(__dirname, 'public', 'usersFiles'), `${req.session.user.id}`);
     }
-    cb(null, path.join(__dirname, 'public', 'usersFiles', `${session.user.id}`, session.user.expPath));
+    cb(null, path.join(__dirname, 'public', 'usersFiles', `${req.session.user.id}`, req.session.user.expPath));
   },
   filename: (req, file, cb) => {
     const filePath = req.body.fileName + path.extname(file.originalname);
@@ -63,16 +63,16 @@ const upload = multer({ storage });
 
 FMrouter.get('/', isAuth, (req, res) => {
   res.render('fileMenager.ejs', {
-    name: session.user.username,
-    imgRef: session.imgRef,
-    userId: session.user.id,
+    name: req.session.user.username,
+    imgRef: req.session.imgRef,
+    userId: req.session.user.id,
   });
 });
 
 FMrouter.put('/newFolder', isAuth, async (req, res) => {
-  const pathF = path.join(__dirname, 'public', 'usersFiles', `${session.user.id}`, session.user.expPath);
-  if (!fs.existsSync(path.join(__dirname, 'public', 'usersFiles', `${session.user.id}`))) {
-    makeDirection(path.join(__dirname, 'public', 'usersFiles'), `${session.user.id}`);
+  const pathF = path.join(__dirname, 'public', 'usersFiles', `${req.session.user.id}`, req.session.user.expPath);
+  if (!fs.existsSync(path.join(__dirname, 'public', 'usersFiles', `${req.session.user.id}`))) {
+    makeDirection(path.join(__dirname, 'public', 'usersFiles'), `${req.session.user.id}`);
   }
   makeDirection(pathF, req.body.folderName);
   res.send('Folder created successfully');
@@ -84,21 +84,21 @@ FMrouter.put('/uploadFile', isAuth, upload.single('fileUpload'), () => {
 });
 
 FMrouter.post('/structure', isAuth, async (req, res) => {
-  if (session.user.expPath === undefined) { session.user.expPath = ''; }
-  if (!fs.existsSync(path.join(__dirname, 'public', 'usersFiles', `${session.user.id}`))) {
-    makeDirection(path.join(__dirname, 'public', 'usersFiles'), `${session.user.id}`);
+  if (req.session.user.expPath === undefined) { req.session.user.expPath = ''; }
+  if (!fs.existsSync(path.join(__dirname, 'public', 'usersFiles', `${req.session.user.id}`))) {
+    makeDirection(path.join(__dirname, 'public', 'usersFiles'), `${req.session.user.id}`);
   }
-  if (session.user.expPath === undefined || session.user.expPath === '') {
-    res.json({ files: await readDir(''), route: `${session.user.id}` });
+  if (req.session.user.expPath === undefined || req.session.user.expPath === '') {
+    res.json({ files: await readDir('', req.session.user.id), route: `${req.session.user.id}` });
   } else {
-    res.json({ files: await readDir(session.user.expPath), route: `${session.user.id}${session.user.expPath}` });
+    res.json({ files: await readDir(req.session.user.expPath, req.session.user.id), route: `${req.session.user.id}${req.session.user.expPath}` });
   }
 });
 
 FMrouter.delete('/deleteFiles', isAuth, (req) => {
   req.body.filesToDel.forEach((fileName) => {
     try {
-      fs.rmSync(path.join(__dirname, 'public', 'usersFiles', `${session.user.id}`, session.user.expPath, fileName), { recursive: true, force: true });
+      fs.rmSync(path.join(__dirname, 'public', 'usersFiles', `${req.session.user.id}`, req.session.user.expPath, fileName), { recursive: true, force: true });
     } catch (err) {
       console.error(err);
     }
@@ -107,7 +107,7 @@ FMrouter.delete('/deleteFiles', isAuth, (req) => {
 
 FMrouter.post('/pathChange', isAuth, (req, res) => {
   if (req.body.pathUpdt !== undefined) {
-    session.user.expPath = path.join(session.user.expPath, '/', req.body.pathUpdt);
+    req.session.user.expPath = path.join(req.session.user.expPath, '/', req.body.pathUpdt);
   }
   res.end();
 });
@@ -118,5 +118,5 @@ FMrouter.get('/getForm', isAuth, async (req, res) => {
 
 FMrouter.post(('/getFile'), async (req, res) => {
   const fileNm = req.body.fileName;
-  res.sendFile(path.join(__dirname, 'public', 'usersFiles', `${session.user.id}`, session.user.expPath, fileNm));
+  res.sendFile(path.join(__dirname, 'public', 'usersFiles', `${req.session.user.id}`, req.session.user.expPath, fileNm));
 });
