@@ -61,7 +61,7 @@ const upload = multer({ storage });
 
 // Routing
 
-FMrouter.get('/', isAuth, (req, res) => {
+FMrouter.get('/', isAuth, (req, res, next) => {
   res.render('fileMenager.ejs', {
     name: req.session.user.username,
     imgRef: req.session.imgRef,

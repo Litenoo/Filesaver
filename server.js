@@ -23,13 +23,6 @@ app.use(session({
 }));
 app.use('/fileMenager', FMRouter);
 
-async function isAuth(req) {
-  if (req.session.user) {
-    return true;
-  }
-  return false;
-}
-
 const db = new sqlite3.Database('./serverdb.db', sqlite3.OPEN_READWRITE, (err) => {
   if (err) { console.error(err); } else {
     const query = 'CREATE TABLE IF NOT EXISTS users(id INT PRIMARY KEY NOT NULL,username VARCHAR(255) NOT NULL,password VARCHAR(255) NOT NULL,email VARCHAR(255) NOT NULL)';
@@ -50,8 +43,16 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage });
 
+function isAuth(req) {
+  if (req.session.user) {
+    return true;
+  }
+  return false;
+}
+
+
 app.get('/', async (req, res, next) => {
-  if (await isAuth(req, res, next)) {
+  if (isAuth(req)) {
     res.render('index.ejs', {
       name: req.session.user.username,
       imgRef: req.session.imgRef,
@@ -66,7 +67,7 @@ app.get('/register', (req, res) => {
 });
 
 app.get('/login', async (req, res, next) => {
-  if (!await isAuth(req)) {
+  if (!isAuth(req)) {
     res.render('login.ejs', {
       message: req.session.message,
     });
@@ -77,13 +78,13 @@ app.get('/login', async (req, res, next) => {
 });
 
 app.get('/profile', async (req, res) => {
-  if (await isAuth(req)) {
+  if (isAuth(req)) {
     res.render('profile.ejs', {
       name: req.session.user.username,
       imgRef: req.session.imgRef,
     });
   } else {
-    res.redirect('/login')
+    res.redirect('/login');
   }
 });
 
